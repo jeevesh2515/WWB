@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "title": "World War B: Bugfront",
+  "description": "A fast, style-ranked browser FPS. Hold the Bugfront against 8 waves of masked mercenaries, Sentinel robots, robot hounds and Exo heavies, then break The Warden with rifles, shotguns, rockets and Overdrive.",
+  "defaultCaptions": {
+    "x": "Survived 8 waves of World War B: Bugfront, a browser FPS against masked mercs, humanoid robots, exosuits and a boss mech. Can you break The Warden?",
+    "facebook": "World War B: Bugfront is a fast, style-ranked first-person wave shooter that runs right in your browser. M4, M870, RPG-X and frags versus masked mercenaries, robot hounds, exosuits and The Warden.",
+    "reddit": "World War B: Bugfront, a browser push-forward FPS with a style meter, augment picks between waves, and a boss fight against The Warden",
+    "discord": "World War B: Bugfront. 8 waves, 1 Warden, S-rank or bust. Beat my score!"
+  },
+  "assets": {
+    "og": "assets/share/og.png",
+    "favicon": "assets/share/favicon.png"
+  }
+}

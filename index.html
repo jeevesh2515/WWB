@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#090b0d" />
+    <title>World War B: Bugfront</title>
+    <meta name="description" content="World War B: Bugfront — a fast, style-ranked first-person wave shooter that plays in your browser. Hold the line against war machines and bring down The Warden." />
+    <link rel="icon" href="./assets/share/favicon.png" type="image/png" />
+    <link rel="preload" href="./fonts/ManusCC0-Bold.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="preload" href="./fonts/ManusCC0-Regular.ttf" as="font" type="font/ttf" crossorigin />
+    <style>
+      html, body { margin: 0; height: 100%; background: #090b0d; overflow: hidden; }
+      #boot-ph { position: fixed; inset: 0; background: radial-gradient(circle at 50% 18%, #3a3326 0%, #111416 45%, #050708 100%); }
+      #boot-ph::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, rgba(255, 170, 72, 0.06) 0 2px, transparent 2px 42px), linear-gradient(180deg, rgba(4, 6, 8, 0.1), rgba(4, 6, 8, 0.78)); }
+    </style>
+  </head>
+  <body>
+    <div id="boot-ph"></div>
+    <canvas id="game"></canvas>
+    <div id="ui"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
