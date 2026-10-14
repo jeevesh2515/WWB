@@ -1,3 +1,4 @@
+import './styles/fonts.css'
 import './styles/main.css'
 import { Audio } from './engine/audio'
 import { I18n } from './engine/i18n'

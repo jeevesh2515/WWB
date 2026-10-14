@@ -1,0 +1,97 @@
+/**
+ * World War B: Bugfront — Master Typography & Font System
+ * Centralized source of truth for all font-faces, typography variables, font weights, and text colors.
+ */
+
+/* ─── 1. Google Fonts Webfont Embed ──────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,500;0,600;0,700;1,700&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+/* ─── 2. Bundled ManusCC0 Local Typography ───────────────────────────── */
+@font-face {
+  font-family: 'ManusCC0';
+  src: url('/fonts/ManusCC0-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ManusCC0';
+  src: url('/fonts/ManusCC0-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ManusCC0';
+  src: url('/fonts/ManusCC0-Bold.ttf') format('truetype');
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─── 3. Centralized Typography Tokens & Semantic Color System ───────── */
+:root {
+  /* Font Family Definitions */
+  --font-display: 'Orbitron', 'Chakra Petch', 'ManusCC0', system-ui, -apple-system, sans-serif;
+  --font-hud: 'Rajdhani', 'Chakra Petch', sans-serif;
+  --font-body: 'Chakra Petch', 'Rajdhani', 'ManusCC0', system-ui, -apple-system, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Roboto Mono', Menlo, Consolas, monospace;
+
+  /* Aliases referenced across existing styles */
+  --display: var(--font-display);
+  --hud: var(--font-hud);
+  --body: var(--font-body);
+  --mono: var(--font-mono);
+
+  /* Font Weight Tokens */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+  --fw-black: 900;
+
+  /* Semantic Typography & UI Text Colors */
+  --text-main: #f3ede6;
+  --text-bright: #ffffff;
+  --text-dim: rgba(243, 237, 230, 0.72);
+  --text-muted: rgba(243, 237, 230, 0.45);
+  --text-dark: #090b0d;
+
+  /* Military Sci-Fi Amber & Status Accent Colors */
+  --text-amber: #ff9a2e;
+  --text-amber-hi: #ffc46a;
+  --text-amber-bright: #ffe082;
+  --text-amber-glow: rgba(255, 140, 40, 0.55);
+  --text-red: #ff3a1a;
+  --text-cyan: #5ef0ff;
+  --text-green: #52ff89;
+
+  /* Global UI Color Binds */
+  --text: var(--text-main);
+  --dim: var(--text-dim);
+}
+
+/* ─── 4. Base Typography Defaults ────────────────────────────────────── */
+html,
+body {
+  color: var(--text-main);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── 5. Reusable Typography Utility Classes ─────────────────────────── */
+.font-display { font-family: var(--font-display) !important; }
+.font-hud { font-family: var(--font-hud) !important; }
+.font-body { font-family: var(--font-body) !important; }
+.font-mono { font-family: var(--font-mono) !important; }
+
+.text-main { color: var(--text-main) !important; }
+.text-bright { color: var(--text-bright) !important; }
+.text-dim { color: var(--text-dim) !important; }
+.text-muted { color: var(--text-muted) !important; }
+.text-amber { color: var(--text-amber) !important; }
+.text-amber-hi { color: var(--text-amber-hi) !important; }
