@@ -18,7 +18,8 @@ const MB = 1024 * 1024
 // V5 Kestrel Terminal: +RTG crane and reach stacker scans (stage 1, the arena itself, ~2.2 MB), +STS crane
 // (streamed with stage 2, ~0.9 MB) and the wet-yard concrete set (~0.6 MB, replaces two removed sets).
 // Containers, ship, water, markings and rain are procedural (0 bytes).
-const BUDGET = { js: 2.0 * MB, fonts: 2.2 * MB, boot: 22.5 * MB, total: 28.5 * MB }
+// V6 Cinematic Landing: +hero background artwork and high-res tactical UI insignia (~0.2 MB).
+const BUDGET = { js: 2.0 * MB, fonts: 2.2 * MB, boot: 23.0 * MB, total: 29.5 * MB }
 const walk = dir => readdirSync(dir).flatMap(name => {
   const p = join(dir, name)
   return statSync(p).isDirectory() ? walk(p) : [p]

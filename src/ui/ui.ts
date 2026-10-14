@@ -201,7 +201,10 @@ export class Ui {
   // ─── title ───────────────────────────────────────────────────────────
   private buildTitle(): void {
     const n = el('div', '', `
-      <div class="title-art"></div>
+      <div class="title-art">
+        <img class="title-hero-img" src="./assets/hero_bg.webp" alt="World War B Frontline Soldier Fighting Bots" />
+        <div class="title-hero-overlay"></div>
+      </div>
       <div class="title-scanlines"></div>
       <div class="title-container">
         <div class="title-left">
