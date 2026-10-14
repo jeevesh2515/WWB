@@ -1,0 +1,25 @@
+World War B: Bugfront
+Copyright (c) 2026 Jeevesh Singale
+
+This project incorporates third-party open-source libraries and CC0 public domain assets under their respective licenses:
+
+1. Three.js
+   License: MIT
+   Copyright (c) 2010-2026 Three.js Authors
+   https://threejs.org/
+
+2. Rapier3D (@dimforge/rapier3d-compat)
+   License: Apache 2.0
+   Copyright (c) 2020-2026 Dimforge
+   https://rapier.rs/
+
+3. Environment Textures & HDRI
+   License: CC0 Public Domain
+   Sources: Poly Haven (https://polyhaven.com/)
+
+4. 3D Character Rig
+   License: Mixamo / Three.js Examples permissive distribution
+
+5. Fonts
+   License: SIL Open Font License 1.1 (OFL)
+   Sources: Orbitron, Rajdhani, Chakra Petch (Google Fonts / The League of Moveable Type / Indian Type Foundry)

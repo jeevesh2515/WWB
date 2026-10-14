@@ -19,15 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-### Third-Party Assets & Disclaimers
-
-The game code is licensed under the MIT License above. Third-party assets bundled or referenced in the repository are governed by their respective permissive licenses:
-- Environment HDRI and PBR textures: CC0 Public Domain (Poly Haven).
-- Physics Engine: Apache 2.0 (Rapier.rs).
-- 3D WebGL Library: MIT (Three.js).
-- Character Rig: Mixamo X-Bot (as distributed in Three.js examples).
-- Fonts: SIL Open Font License 1.1.
-All other game design, procedural models, and UI assets are provided under the MIT License without warranty.
