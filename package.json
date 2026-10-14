@@ -1,7 +1,7 @@
 {
   "name": "worldwarb",
-  "private": true,
   "version": "0.1.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "node scripts/manus-game-assets/restore.mjs && vite",
