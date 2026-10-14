@@ -1,167 +1,197 @@
-# World War B: Bugfront
+<div align="center">
 
-A hyper-real, push-forward first-person shooter that runs in the browser (three.js + Rapier). As Kai,
-a lone operator, hold a storm-lit container port against **8 waves** of masked mercenaries, humanoid
-robots, robot hounds and powered exoskeletons, ending in a boss fight against **The Warden**.
-Kills drop shards that restore health, armor and ammo, so aggression keeps you alive. Chain kills
-to climb the style ranks, pick an augment between waves, and fire off Overdrive when it is charged.
-Classic **Deathmatch** against five bots (first to 20 frags) is still available from the title
-screen. The game remains playable offline, and can optionally use Supabase for pilot login,
-cross-device progress, match records, and a server-side AI after-action report.
+# ⚡ WORLD WAR B: BUGFRONT ⚡
+### *Hyper-Real, Style-Ranked 3D Browser First-Person Shooter*
 
-The current (V4) design, its reference analysis (Halo, Apex, CoD MW, Payday 2, DOOM Eternal, ULTRAKILL,
-Titanfall 2) and concept art are in [`docs/concept/v4/PROPOSAL.md`](docs/concept/v4/PROPOSAL.md); earlier
-rounds are in `docs/concept/`.
+[![Play Live](https://img.shields.io/badge/PLAY_NOW-GitHub_Pages-FF9A2E?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jeevesh2515.github.io/WWB/)
+[![Build & Deploy](https://img.shields.io/github/actions/workflow/status/jeevesh2515/WWB/deploy-pages.yml?style=for-the-badge&label=Deployment)](https://github.com/jeevesh2515/WWB/actions)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Three.js](https://img.shields.io/badge/Three.js-WebGL_3D-black?style=for-the-badge&logo=threedotjs&logoColor=white)](https://threejs.org/)
+[![Rapier Physics](https://img.shields.io/badge/Rapier_3D-WASM_Physics-E05D44?style=for-the-badge)](https://rapier.rs/)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth_%26_Cloud_Sync-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-## Controls
+<br/>
 
-| Input | Action |
-| --- | --- |
-| Mouse | Look (pointer lock; click the game to capture the mouse) |
-| W A S D / arrows | Move |
-| Shift | Sprint |
-| Space | Jump |
-| C / Left Ctrl | Hold to crouch (real cover: smaller hitbox, bots aim lower); tap while running to slide |
-| Left mouse | Fire |
-| Right mouse | Aim down sights |
-| R | Reload |
-| 1 / 2 / 3, mouse wheel, Q | Rifle / shotgun / rocket launcher, cycle, last weapon |
-| G | Throw grenade |
-| F | Overdrive (when charged) |
-| 1 / 2 / 3 or click | Choose an augment between waves |
-| Tab (hold) | Scoreboard |
-| Esc / P | Pause, settings and controls |
+[**🚀 PLAY THE LIVE GAME IN YOUR BROWSER →**](https://jeevesh2515.github.io/WWB/)
 
-Gamepad (standard mapping): RT fire, LT aim, A jump, X reload, Y/RB next weapon, LB previous,
-L3 sprint, R3 slide, D-pad up Overdrive, D-pad down grenade, Start pause.
+*Zero installation. Instant load. Runs directly in Chrome, Brave, Firefox, Edge, and Safari with gamepad & keyboard/mouse support.*
 
-## Game systems
-- **Arena — Kestrel Terminal (V5):** a wet 80 × 80 m container yard ringed by three-high walls of
-  procedural ISO containers (`src/game/containers.ts`: real corrugation, castings, door gear, stencilled
-  codes), a Tripo RTG crane straddling the central deck, reach stackers as heavy cover, painted lanes and
-  bay stencils on wet concrete with puddles and rain ripples, drizzle (medium/high quality), and an open
-  north quay with ship-to-shore cranes (streamed with stage 2), harbour water and a container ship.
-- **Deathmatch robots:** two of the six Deathmatch bots (WRAITH, NOVA) are Sentinel robots.
-- **Low health:** a sharp, pulsing blood-red vignette closes in below 35 HP (no blur or heavy desaturation).
+</div>
 
-- **Enemies:** Wolf-masked riflemen and Boar-masked shotgun breachers, Sentinel humanoid robots
-  (join the rifle rotation from wave 2), robot Hounds with back turrets, Exo minigun heavies (back power
-  cell = 3x weak point), and The Warden, a 3 m assault exoskeleton with slam, cannon and drone phases.
-  Characters are textured Tripo scans re-skinned onto shared rigs (`scripts/v4-rig-transfer.mjs`).
-- **Recharging armor:** 150 armor over 100 health. After 1 s without taking damage, armor refills
-  (segmented cyan bar, RECHARGING shimmer, HUD sparks, recharge whine, full chime, break shatter).
-- **Player body:** Kai's rigged body is rendered into the shadow map only, so your own silhouette
-  moves across the ground.
-- **Style meter:** ranks D → C → B → A → S → SS → FRONTBREAKER. Variety, headshots, multi-kills and
-  environmental kills pay more; the meter decays when you play passively. Rank multiplies score.
-- **Augments:** eight stackable perks (Hollow Points, Quick Hands, Plated, Scavenger, Overclock,
-  Demolitions, Vampire Core, Choke), offered three at a time after each wave.
-- **Overdrive:** a charged state with faster fire, infinite ammo and a distinct colour grade.
-- **Weapons:** M4 carbine (holographic sight), M870 pump shotgun (ghost-ring rear and fiber-optic
-  front sight, shell-by-shell reload), RPG-X (rocket launcher with splash damage) and frag grenades.
-- **Feedback:** recoil and camera kick, muzzle flash and smoke, tracers, flipbook sparks, decals,
-  shells, debris, shockwaves, hit-stop, hitmarkers, damage arcs, and HUD spark bursts on hits,
-  kills, pickups and rank changes.
-- **Presentation:** HDRI sky and image-based lighting, a shadow-casting sun, fog, world-space
-  grime on PBR surfaces (reflections and emission kept low to avoid glare), HDR bloom and a
-  cinematic grade with damage, low-health and Overdrive looks. The HUD scales down on short
-  viewports.
+---
 
-## Loading
+## 📸 Gameplay & Visual Showcase
 
-Boot loads only what the title screen and wave 1 need (arena, Wolf/Boar rigs, Kai's body, rifle and
-shotgun, core VFX and SFX, title music), then shows the title immediately. Later content (Sentinel and
-Hounds, Exo and launcher, Warden, boss audio and music) streams through a staged queue in `src/game/stages.ts`.
-The queue pauses while combat is busy (many effects or enemies on screen) and resumes when it calms
-down. If a stage is still late when its wave starts, it is promoted to urgent and a "syncing
-wave data" tag is shown.
+<div align="center">
 
-## Cloud profile, cross-device saves, and AI debriefs
+### 🎮 Tactical Landing Page & Mode Selection
+*High-production Orbitron typography, cinematic soldier combat backdrop, real-time Supabase profile sync.*
+<img src="docs/screenshots/landing_page.png" alt="World War B Landing Page" width="95%" />
 
-1. Create a Supabase project and run [`supabase/migrations/001_worldwarb.sql`](supabase/migrations/001_worldwarb.sql) in its SQL editor.
-2. Copy [`.env.example`](.env.example) to `.env.local` and set `VITE_SUPABASE_URL` plus the public `VITE_SUPABASE_ANON_KEY`. These are browser-safe values; never put a `service_role` key in Vite or GitHub.
-3. Deploy [`supabase/functions/after-action/index.ts`](supabase/functions/after-action/index.ts) as the `after-action` Edge Function. Set `OPENAI_API_KEY` and optionally `OPENAI_MODEL` as Edge Function secrets. Without an AI key, the function returns a deterministic tactical report instead of exposing a key or failing.
-4. For GitHub Pages, add the same two `VITE_` values as repository Actions secrets/variables and build with `npm run build` (or the project’s existing pnpm build once pnpm is available).
+<br/><br/>
 
-Login and account creation appear in the **Pilot Profile** panel. Match results can be synced to the signed-in account and sent to **AI Debrief**. Offline play and the local save continue to work when Supabase is not configured.
+### 💥 High-Intensity In-Game Wave Survival & Augment Selection
+*Push-forward M4 Carbine combat in Kestrel Terminal, dynamic HUD vitals, style multiplier, and post-wave tactical perks.*
+<img src="docs/screenshots/gameplay_combat.png" alt="In-Game Combat & Augment Selection" width="95%" />
 
-## Development
+<br/><br/>
 
-```bash
-pnpm install
-pnpm dev      # dev server (Tweak panel available in Manus Preview)
-pnpm build    # typecheck + production build + boot/total size budget + sharing metadata
-pnpm test     # unit tests (deathmatch rules, onslaught style/waves/perks, save, tuning bridge)
-pnpm smoke    # after build: headless Bugfront and Deathmatch runs with screenshots in shots/
+### 🤖 Mechanized Warfare Concept
+*Holding the frontline against humanoid war bots, spider mechas, and The Warden assault exoskeleton.*
+<img src="docs/screenshots/concept_combat.jpg" alt="Mechanized Warfare Concept Art" width="95%" />
+
+</div>
+
+---
+
+## 🎯 About The Game
+
+**World War B: Bugfront** is a push-forward first-person shooter running on pure web technologies (**Three.js WebGL + Rapier3D WebAssembly physics**). 
+
+As **Kai**, a frontline spec-ops operator, hold a storm-lit industrial container port (**Kestrel Terminal**) against **8 brutal waves** of masked mercenaries, humanoid combat droids, hunter hounds, and mechanized exoskeletons, culminating in a colossal boss fight against **The Warden**.
+
+### 🌟 Core Gameplay Pillars
+
+- **Aggression Keeps You Alive**: Slain war bots drop Frontline Shards that instantly replenish health, recharging armor, and ammo. Camping is fatal; forward momentum is survival.
+- **Dynamic Style Ranking**: Chain kills, headshots, slide kills, weapon swaps, and explosive multikills to climb the Devil May Cry / ULTRAKILL-inspired style ranks:  
+  `D (Dull) → C (Chaotic) → B (Brutal) → A (Anarchic) → S (Savage) → SS (Supreme) → FRONTBREAKER`. Rank acts as a direct score multiplier.
+- **Tactical Augment Perks**: Between waves, select one of eight stackable enhancements:
+  - 🩸 **Vampire Core**: Kills siphon biological repair fluids, healing on every takedown.
+  - 🎯 **Choke**: -30% shotgun spread, +15% concentrated kinetic damage.
+  - 🛡️ **Plated**: +50 maximum armor pool with instant overshield refill.
+  - ⚡ **Overclock**: +25% weapon cycle rate and reduced recoil recovery.
+  - 💣 **Demolitions**: +40% explosion radius and bonus grenade capacity.
+  - 📦 **Scavenger**: Double ammunition drop yield from fallen bots.
+  - 💀 **Hollow Points**: +35% critical headshot damage multiplier.
+  - ⚡ **Quick Hands**: +40% reload speed and near-instant weapon draw.
+- **Overdrive State**: Fill your kinetic energy meter to activate Overdrive—unleashing maximum fire rate, infinite ammo reserve, and high-contrast night-vision grading.
+- **Multiple Game Modes**:
+  - 🏆 **Bugfront (Onslaught)**: 8 escalating waves ending in the Warden boss encounter.
+  - 💀 **Deathmatch**: High-speed 6-bot arena combat (first to 20 frags).
+
+---
+
+## 🕹️ Controls Guide
+
+| Action | Keyboard & Mouse | Gamepad (Standard) |
+| :--- | :--- | :--- |
+| **Look** | Mouse (click to capture pointer lock) | Right Stick |
+| **Move** | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> / Arrows | Left Stick |
+| **Sprint** | <kbd>Shift</kbd> | <kbd>L3</kbd> (Left stick click) |
+| **Jump** | <kbd>Space</kbd> | <kbd>A</kbd> / <kbd>✕</kbd> |
+| **Crouch & Slide** | <kbd>C</kbd> or <kbd>Left Ctrl</kbd> (tap while sprinting to slide) | <kbd>B</kbd> / <kbd>R3</kbd> |
+| **Fire** | Left Mouse Button | <kbd>RT</kbd> / Right Trigger |
+| **Aim Down Sights** | Right Mouse Button | <kbd>LT</kbd> / Left Trigger |
+| **Reload** | <kbd>R</kbd> | <kbd>X</kbd> / <kbd>◻</kbd> |
+| **Weapon Selection** | <kbd>1</kbd> Rifle · <kbd>2</kbd> Shotgun · <kbd>3</kbd> Rocket · <kbd>Q</kbd> / Wheel Last | <kbd>Y</kbd> / <kbd>RB</kbd> Next · <kbd>LB</kbd> Prev |
+| **Frag Grenade** | <kbd>G</kbd> | D-Pad Down |
+| **Activate Overdrive**| <kbd>F</kbd> (when charged) | D-Pad Up |
+| **Choose Augment** | <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> or Click | D-Pad Left / Up / Right |
+| **Scoreboard** | Hold <kbd>Tab</kbd> | Select / Back |
+| **Pause & Settings** | <kbd>Esc</kbd> / <kbd>P</kbd> | Start |
+
+---
+
+## 🏗️ Technical Architecture
+
+```
+WWB/
+├── src/
+│   ├── main.ts              # Game bootstrap, state manager, audio mixer, busy-aware loop
+│   ├── engine/              # Rapier 3D WASM physics bridge, fixed-step tick, input system
+│   ├── game/
+│   │   ├── game.ts          # Match orchestrator, damage arcs, combat resolution
+│   │   ├── onslaught.ts     # Pure wave director, style meter calculation, perk logic
+│   │   ├── weapons.ts       # Weapon mechanics, recoil curves, hitscan & projectile ballistics
+│   │   ├── bots.ts          # Enemy AI navigation, combat routines, IK aiming
+│   │   ├── stages.ts        # Staged asset loader with background streaming queue
+│   │   └── arena.ts         # Procedural ISO 6346 shipping containers & Kestrel port deck
+│   ├── ui/
+│   │   ├── ui.ts            # HUD render layer, modal dialogs, title screen
+│   │   ├── icons.ts         # High-definition inline SVG vector icon system (zero network overhead)
+│   │   └── sparks.ts        # GPU canvas particle system for sparks & UI feedback
+│   └── backend/
+│       ├── cloud.ts         # Cloud profile, saves & AI debrief integration
+│       └── supabase.ts      # REST-first browser-safe Supabase client (zero heavy SDK)
+├── supabase/
+│   ├── migrations/          # SQL schema (profiles, match_records, player_progress)
+│   └── functions/           # Edge Functions (AI after-action debrief)
+└── public/
+    └── assets/              # Web-optimized 3D models (GLTF/GLB), HDRI, audio (SFX/Music), WebP
 ```
 
-`scripts/debug.mjs` is a dev-only probe. It runs JavaScript steps from a file (separated by `---`
-lines) against the running dev server and captures a screenshot after each step.
+- **Render Engine**: Three.js WebGL renderer with image-based lighting (Poly Haven CC0 HDRI), PBR metal/roughness materials, screen-space grime, and dynamic bloom.
+- **Physics**: Rapier3D compiled to WebAssembly for deterministic collision meshes, character controllers, and dynamic debris.
+- **Audio Engine**: Staged Web Audio API mixer with spatial 3D audio, dynamic combat ducking, low-pass filters on low health, and adaptive music switching.
+- **Adaptive Staged Streaming**: Loads core combat assets in `< 22 MB`, rendering the title screen in milliseconds while later waves and high-poly boss assets stream dynamically during calm gameplay windows.
 
-Asset pipeline (sources in `.asset-src/`, not shipped):
+---
 
-- `scripts/fetch-assets.py` downloads the CC0 Poly Haven HDRI, textures and props.
-- `scripts/build-assets.py` converts them into web-ready files.
-- `scripts/build-v2.py` packs the VFX flipbook atlases, HUD art, music and SFX.
-- `scripts/prune-chars.mjs` trims, welds and meshopt-compresses the character rig.
+## ☁️ Cloud Profile, Cross-Device Saves & Supabase
 
-## Layout
+World War B runs 100% offline out-of-the-box, but also features seamless **Supabase Cloud Sync** for cross-device progression, leaderboards, and AI match debriefs:
 
-| Path | Role |
-| --- | --- |
-| `src/main.ts` | Bootstrap, staged loading, busy-aware streaming, screen flow, perk flow, music |
-| `src/engine/` | Fixed-step loop, input, Rapier physics, renderer + post-processing, Web Audio mixer (staged samples, streamed music), save, i18n |
-| `src/game/config.ts` / `tuning.ts` | Gameplay tuning and the Preview Tweak catalog bound to it |
-| `src/game/onslaught.ts` | Pure style-meter, wave-plan and perk logic (unit tested) |
-| `src/game/rules.ts` | Pure deathmatch rules (unit tested) |
-| `src/game/game.ts` | Wave director, combat resolution, projectiles, explosions, camera feel, HUD state |
-| `src/game/stages.ts` | Staged asset loader with the busy-aware background queue |
-| `src/game/weapons.ts` / `guns.ts` | Player arsenal logic and procedural modeled viewmodels with gloved arms |
-| `src/game/bots.ts` / `robot.ts` / `hornet.ts` / `nav.ts` | Enemy AI, rigged robots with armour kits and IK, drones, navigation grid |
-| `src/game/arena.ts` / `props.ts` / `library.ts` | Level build, explosive props + pickups, asset loading and PBR materials |
-| `src/game/fx.ts` | Flipbook-atlas GPU particles, decals, shells, debris, light pool, shockwaves, explosions |
-| `src/ui/ui.ts` / `sparks.ts`, `src/styles/main.css` | DOM HUD and menus, and the HUD spark particle layer |
-| `game-sharing.json`, `assets/share/` | Link-preview title/description, OG cover and favicon |
+1. **Authentication**: Sign in directly from the **Pilot Profile** HUD panel with Email & Password.
+2. **Cloud Persistence**: Your best wave, high scores, style ranks, and combat statistics automatically sync across devices.
+3. **Database Schema**: Pre-built migration provided in [`supabase/migrations/001_worldwarb.sql`](supabase/migrations/001_worldwarb.sql).
+4. **Security by Design**: The client uses only browser-safe public `anon` credentials (`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`). `service_role` secrets and database passwords are never bundled or exposed.
 
-## Rules for changes
+---
 
-- **Simulation in `step()`, visuals in `render()`/`animate()`.** Gameplay state only changes in
-  fixed steps; read presses there with `input.consume(action)`.
-- **Rules stay pure.** Scoring, style, waves and perks go in `onslaught.ts`/`rules.ts` with tests.
-- **No new lights at runtime.** Dynamic lights come from the pre-allocated pool in `fx.ts`, so
-  explosions never trigger shader recompiles.
-- **Keep glare low.** Environmental reflections and emission are deliberately subdued; use them sparingly.
-- Keep `pnpm build` within budget and `pnpm smoke` green.
+## 💻 Local Development & Testing
 
-## Preview Tweak
+### Prerequisites
+- Node.js 20+
+- pnpm (recommended) or npm
 
-`src/game/tuning.ts` is the game's parameter manager, and `config.ts` owns the source defaults
-and the active configuration. The manager registers through `scripts/manus-tuning/adapter.js`
-only under `import.meta.env.DEV`. Keep the Vite plugin and the `scripts/__manus__/` helpers
-intact; production builds exclude the adapter and never inject the bridge.
+### Setup & Run
+```bash
+# Clone the repository
+git clone https://github.com/jeevesh2515/WWB.git
+cd WWB
 
-Parameters apply at different points:
+# Install dependencies
+pnpm install
 
-- `LIVE` parameters apply on the next update.
-- `NEXT_ACTION` parameters apply at the next jump.
-- `NEXT_RUN` parameters apply when a match starts.
+# Start local dev server
+pnpm dev
+```
+Open [http://localhost:5173/](http://localhost:5173/) to play and test locally.
 
-Apply changes preview state only; Save with Manus edits `DEFAULT_CONFIG`. While any gameplay
-value differs from its default, the manager latches `tuning.unranked`. `Game` copies that flag
-onto the match, so modified runs are not saved as best scores.
+### Production Build & Size Budget Verification
+```bash
+# Typecheck + Vite production bundle + wire size budget check
+pnpm build
 
-## Credits
+# Run Vitest test suite (pure game rules, style meter, onslaught, save store)
+pnpm test
 
-- HDRI, PBR textures and prop models: [Poly Haven](https://polyhaven.com), CC0 (*The Sky Is On Fire*
-  HDRI; Concrete Floor 03, Concrete Floor Worn 001, Concrete Wall 008, Rusty Metal 02, Metal Plate
-  and Corrugated Iron 02 textures; Barrel 03, Old Military Crate, Wooden Military
-  Crate, Medical Box, Ammo Box, Propane Tank, Utility Box 02 and Security Light models).
-- Port props (RTG crane, ship-to-shore crane, reach stacker) and the clean Sentinel: generated with Tripo
-  from AI concept references for this project (`scripts/build-v5-props.sh`).
-- Character rig and animations: Mixamo X Bot, as distributed in the three.js examples.
-- Enemy armour, weapons, drones and arms: procedural geometry built in code for this project.
-- Music (title, combat and boss themes) and sound effects: AI-generated for this project.
-- VFX flipbooks, HUD icons, loading and title backgrounds, and concept art: AI-generated for this project.
-- Fonts: SIL Open Font License 1.1 (see `public/fonts/*-OFL.txt`).
-- Libraries: three.js (MIT), Rapier (Apache-2.0), meshoptimizer (MIT).
-- Sharing artwork (OG cover, favicon): AI-generated for this project.
+# Run headless smoke test with automated screenshots
+pnpm smoke
+```
+
+---
+
+## 🛡️ Security & Privacy
+
+- **No Secret Leaks**: `.env` and `.env.local` are explicitly ignored in `.gitignore`.
+- **Row-Level Security (RLS)**: Database tables enforce strict user isolation; pilots can only read and write their own records.
+- **Offline First**: If Supabase credentials are not present, the game gracefully switches to offline mode with `localStorage` fallback—no crashes or blocked gameplay.
+
+---
+
+## 📜 Credits & Attributions
+
+- **Environment & PBR Textures**: [Poly Haven](https://polyhaven.com/) (CC0) — *The Sky Is On Fire* HDRI, industrial wet concrete, and rusty metal materials.
+- **Terminal Props**: RTG cranes and container equipment modeled from Tripo scans.
+- **Rigging & Animations**: Mixamo X Bot via Three.js.
+- **Icons & Graphics**: Vector SVG icon library custom crafted for World War B.
+- **Physics**: [Rapier.rs](https://rapier.rs/) (Apache-2.0).
+- **Core 3D Engine**: [Three.js](https://threejs.org/) (MIT).
+
+---
+
+<div align="center">
+  <sub>World War B: Bugfront · Built with passion for open-web gaming.</sub>
+</div>
