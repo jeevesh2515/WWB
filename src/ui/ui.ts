@@ -6,6 +6,7 @@ import { RANK_COLOR, type Perk } from '../game/onslaught'
 import { accuracy, formatClock, type Combatant, type MatchState, type Medal } from '../game/rules'
 import type { HitKind } from '../game/weapons'
 import { Sparks } from './sparks'
+import { renderIcon } from './icons'
 import type { AiDebrief, CloudStatus } from '../backend/cloud'
 
 export type Screen = 'boot' | 'title' | 'hud' | 'pause' | 'settings' | 'controls' | 'results'
@@ -29,7 +30,7 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', html = ''):
   if (html) e.innerHTML = html
   return e
 }
-const icon = (name: string, cls = '') => `<i class="ico ${cls}" style="--ico:url(assets/ui/icon_${name}.webp)"></i>`
+const icon = (name: string, cls = '') => renderIcon(name, cls)
 
 const CONTROLS: [string, string][] = [
   ['W A S D', 'Move'],
@@ -177,7 +178,7 @@ export class Ui {
     const n = el('div', '', `
       <div class="boot-art"></div>
       <div class="boot-wrap">
-        <img class="boot-mark" src="/assets/share/favicon.png" alt="" aria-hidden="true" />
+        <img class="boot-mark" src="./assets/logo.png" alt="World War B" />
         <div class="logo"><span class="logo-a">WORLD WAR B</span><span class="logo-b">BUGFRONT</span></div>
         <div class="boot-bar"><i></i><b></b></div>
         <div class="boot-row"><span class="boot-label">ARMING FRONT</span><span class="boot-pct">0%</span></div>
@@ -201,20 +202,47 @@ export class Ui {
   private buildTitle(): void {
     const n = el('div', '', `
       <div class="title-art"></div>
-      <div class="title-left">
-        <div class="kicker">BROWSER FPS · WAVE SURVIVAL · STYLE RANKED</div>
-        <div class="logo big"><span class="logo-a">WORLD WAR B</span><span class="logo-b">BUGFRONT</span></div>
-        <div class="tagline">Eight waves. One Warden. Hold the line in the Bugfront.</div>
-        <div class="menu"></div>
-        <div class="best"></div>
+      <div class="title-scanlines"></div>
+      <div class="title-container">
+        <div class="title-left">
+          <div class="title-badge-row">
+            <img class="title-emblem" src="./assets/logo.png" alt="World War B" />
+            <div class="title-meta">
+              <span class="badge-tag">SECTOR 04 // PROTOCOL ACTIVE</span>
+              <span class="kicker">BROWSER FPS · WAVE SURVIVAL · STYLE RANKED</span>
+            </div>
+          </div>
+          <div class="logo big">
+            <span class="logo-a">WORLD WAR B</span>
+            <span class="logo-b"><span class="logo-sub-bracket">[</span>BUGFRONT<span class="logo-sub-bracket">]</span></span>
+          </div>
+          <div class="tagline">Eight waves of mechanized warfare. One Warden boss. Hold the line, harvest Frontline Shards, and style-rank your combat survival.</div>
+          <div class="menu-heading">OPERATIONS // CHOOSE COMBAT MODE</div>
+          <div class="menu"></div>
+          <div class="menu-options"></div>
+          <div class="best"></div>
+        </div>
+        <div class="account panel-cut">
+          <div class="account-header">
+            <span class="account-beacon"></span>
+            <div class="account-title">PILOT PROFILE</div>
+          </div>
+          <div class="account-status">OFFLINE MODE</div>
+          <div class="account-fields">
+            <input class="account-email" type="email" autocomplete="email" placeholder="PILOT EMAIL"/>
+            <input class="account-password" type="password" autocomplete="current-password" placeholder="SECURITY KEY"/>
+          </div>
+          <div class="account-actions"></div>
+        </div>
       </div>
-      <div class="account panel-cut"><div class="account-title">PILOT PROFILE</div><div class="account-status">OFFLINE MODE</div><div class="account-fields"><input class="account-email" type="email" autocomplete="email" placeholder="EMAIL"/><input class="account-password" type="password" autocomplete="current-password" placeholder="PASSWORD"/></div><div class="account-actions"></div></div>
-      <div class="title-foot">CC0 environment assets · WASD + mouse · gamepad supported · browser ready</div>`)
+      <div class="title-foot">WASD + MOUSE · SPACE JUMP · SHIFT SPRINT · C SLIDE · F OVERDRIVE · 1/2/3 WEAPONS · CC0 ASSETS</div>`)
     n.querySelector('.menu')!.append(
-      this.button('BUGFRONT', () => this.actions.play('onslaught'), 'primary', '8 waves · boss fight'),
-      this.button('DEATHMATCH', () => this.actions.play('deathmatch'), '', `6-bot free-for-all`),
-      this.button(this.t.t('menu.controls'), () => this.push('controls')),
-      this.button(this.t.t('menu.settings'), () => this.push('settings')),
+      this.button('BUGFRONT', () => this.actions.play('onslaught'), 'primary mode-card', '8 WAVES · THE WARDEN BOSS FIGHT'),
+      this.button('DEATHMATCH', () => this.actions.play('deathmatch'), 'mode-card', 'ARENA COMBAT · 6-BOT FREE-FOR-ALL'),
+    )
+    n.querySelector('.menu-options')!.append(
+      this.button(this.t.t('menu.controls'), () => this.push('controls'), 'opt-btn'),
+      this.button(this.t.t('menu.settings'), () => this.push('settings'), 'opt-btn'),
     )
     this.accountPanel = n.querySelector<HTMLElement>('.account')!
     this.accountStatusEl = n.querySelector<HTMLElement>('.account-status')!
