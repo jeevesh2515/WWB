@@ -26,20 +26,32 @@
 <div align="center">
 
 ### 🎮 Tactical Landing Page & Mode Selection
-*High-production Orbitron typography, cinematic soldier combat backdrop, real-time Supabase profile sync.*
-<img src="docs/screenshots/landing_page.png" alt="World War B Landing Page" width="95%" />
+*High-production Orbitron typography, cinematic soldier combat backdrop, and real-time cloud profile sync.*
+<img src="docs/screenshots/01_landing_page.png" alt="World War B Landing Page" width="95%" />
 
 <br/><br/>
 
-### 💥 High-Intensity In-Game Wave Survival & Augment Selection
-*Push-forward M4 Carbine combat in Kestrel Terminal, dynamic HUD vitals, style multiplier, and post-wave tactical perks.*
-<img src="docs/screenshots/gameplay_combat.png" alt="In-Game Combat & Augment Selection" width="95%" />
+### 🌧️ Wave 1 Infiltration — Kestrel Terminal Port Deck
+*Three.js PBR container yard, wet concrete rain ripples, RTG cranes, and procedural M4 Carbine viewmodel.*
+<img src="docs/screenshots/02_wave_start.png" alt="Wave 1 Wolf Pack Patrol Infiltration" width="95%" />
 
 <br/><br/>
 
-### 🤖 Mechanized Warfare Concept
-*Holding the frontline against humanoid war bots, spider mechas, and The Warden assault exoskeleton.*
-<img src="docs/screenshots/concept_combat.jpg" alt="Mechanized Warfare Concept Art" width="95%" />
+### 🔥 High-Stakes Close-Quarters Combat & Low-Health Alarm
+*Emergency Armor Broken warning, red battle vignette, and high-intensity firefights against Sentinel combat droids.*
+<img src="docs/screenshots/03_intense_combat.png" alt="Close Quarters Combat with Armor Broken" width="95%" />
+
+<br/><br/>
+
+### ⚡ Wave Cleared & Health Shard Harvesting
+*Aggression rewards survival: slain bots drop glowing recovery shards, M870 pump shotgun, and style multipliers.*
+<img src="docs/screenshots/04_wave_cleared.png" alt="Wave Cleared and Shard Resupply" width="95%" />
+
+<br/><br/>
+
+### 🛡️ Tactical Augment Perks Selection
+*Stackable perks between waves powered by our custom high-visibility glowing vector SVG icon system.*
+<img src="docs/screenshots/05_choose_augment.png" alt="Choose An Augment Perk Selection" width="95%" />
 
 </div>
 
