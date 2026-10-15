@@ -19,6 +19,7 @@ export type BrainContext = {
   playerEye: THREE.Vector3
   playerId: number
   frozen: boolean
+  duelRivalId?: number
 }
 
 type State = 'roam' | 'engage' | 'chase' | 'cover' | 'item'
@@ -83,6 +84,8 @@ export class Bot {
   target = -1
   /** Bugfront wave enemy (shares a team with other wave enemies). */
   wave = false
+  /** Network puppet: driven by duel state instead of AI (1v1 multiplayer rival). */
+  remote = false
   /** Uniform model scale (1 = human-sized). */
   readonly scale: number
   /** Heavy enemies resist knockback and flinch. */
@@ -206,6 +209,7 @@ export class Bot {
   /** Remove instantly (match reset). */
   hide(): void {
     this.alive = false
+    this.remote = false
     this.dyingT = -1
     this.anim.reset()
     this.parts.root.visible = false
@@ -213,9 +217,46 @@ export class Bot {
   }
 
   private park(): void {
+    this.parkCollider()
+    this.vel.set(0, 0, 0)
+  }
+
+  private parkCollider(): void {
     this.body.setNextKinematicTranslation({ x: 0, y: -50, z: 0 })
     this.body.setTranslation({ x: 0, y: -50, z: 0 }, true)
-    this.vel.set(0, 0, 0)
+  }
+
+  /**
+   * Drive this bot as a network puppet: teleport to the interpolated rival pose.
+   * Respawn snaps; death hides the mesh and parks the collider (no corpse blocking).
+   * Ghost puppets (solid=false) also park the collider while alive: the rival is
+   * a visible racer that can never block shots or movement (no PvP in bot races).
+   */
+  driveRemote(x: number, y: number, z: number, yaw: number, alive: boolean, hp: number, dt: number, solid = true): void {
+    if (!alive) {
+      this.alive = false
+      this.parts.root.visible = false
+      this.park()
+      return
+    }
+    if (!this.alive) {
+      this.dyingT = -1
+      this.anim.reset()
+      this.parts.root.visible = true
+      this.parts.root.scale.setScalar(1)
+      this.alive = true
+    }
+    const k = dt > 0 ? 1 / dt : 60
+    this.vel.set((x - this.pos.x) * k, 0, (z - this.pos.z) * k)
+    this.pos.set(x, y, z)
+    this.yaw = yaw
+    this.aimDir.set(-Math.sin(yaw), 0, -Math.cos(yaw))
+    this.health = hp
+    if (solid) {
+      this.body.setTranslation({ x, y: y + 0.93 * this.scale, z }, true)
+      this.body.setNextKinematicTranslation({ x, y: y + 0.93 * this.scale, z })
+    } else this.parkCollider()
+    this.anim.update(dt, Math.hypot(this.vel.x, this.vel.z), 0, 0, 0, 0, this.world.time)
   }
 
   isHead(point: THREE.Vector3): boolean {
@@ -409,6 +450,11 @@ export class Bot {
     for (const t of ctx.targets) {
       if (!t.alive || t.id === this.id) continue
       if (this.wave && !t.isPlayer) continue
+      // Bot race mode: rival AI hunts only prey bots; prey bots target racers only
+      if (ctx.duelRivalId !== undefined) {
+        if (this.id === ctx.duelRivalId && t.isPlayer) continue
+        if (this.id !== ctx.duelRivalId && !t.isPlayer && t.id !== ctx.duelRivalId) continue
+      }
       const d = t.pos.distanceTo(this.pos)
       if (d > CONFIG.bots.viewRange * (this.wave ? 1.3 : 1)) continue
       const to = tmpB.copy(t.pos).sub(this.pos).setY(0).normalize()

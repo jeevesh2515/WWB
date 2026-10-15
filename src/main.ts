@@ -8,6 +8,8 @@ import { SAVE_KEY, SaveStore, type SaveData } from './engine/save'
 import type { Game, GameMode } from './game/game'
 import { Ui } from './ui/ui'
 import { CloudServices } from './backend/cloud'
+import { DUEL, duelInviteQuery, makeRoomCode, normalizeRoomCode, roomCodeFromQuery } from './net/duel'
+import { DuelLink, quickMatch } from './net/lobby'
 
 /**
  * Boot flow (staged streaming):
@@ -67,11 +69,148 @@ async function boot(): Promise<void> {
     game.choosePerk(i)
     if (game.mode === 'playing') input.lockPointer()
   }
+  // ─── 1v1 duel lobby ────────────────────────────────────────────────
+  let duelLink: DuelLink | null = null
+  let duelBusy = false
+  let duelPeerSeen = false
+  let duelGen = 0
+  const pilotName = () => ((cloud?.user?.email?.split('@')[0] ?? 'PILOT').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) || 'PILOT')
+  const closeDuelLink = () => {
+    const link = duelLink
+    duelLink = null
+    if (link) void link.close(0)
+  }
+  const beginDuel = (rivalName: string, remote: boolean) => {
+    if (!game) return
+    audio.unlock()
+    audio.retryMusic()
+    ui.resetHud()
+    ui.setDuelStatus(null)
+    game.startDuel(rivalName, remote)
+    ui.show('hud')
+    loop.resetAccumulator()
+    input.lockPointer()
+  }
+  const openDuelRoom = async (code: string, token: number) => {
+    closeDuelLink()
+    duelPeerSeen = false
+    ui.setRoomCode(code, `${location.origin}${location.pathname}${duelInviteQuery(code)}`)
+    ui.setDuelStatus(`ROOM ${code} · WAITING FOR RIVAL… CPU FILLS IN`)
+    let link: DuelLink | null = null
+    let helloReplied = false
+    try {
+      link = await DuelLink.open(code, pilotName(), {
+        onMsg: m => {
+          game?.duelApply(m)
+          // Answer one hello so the late joiner learns our name too (replied-once: no ping-pong).
+          if (m.t === 'hello' && !helloReplied) {
+            helloReplied = true
+            duelLink?.send({ t: 'hello', name: pilotName(), seq: 0 })
+          }
+        },
+        onPeer: present => {
+          if (token !== duelGen || !game?.duel?.remote) return
+          if (present) {
+            duelPeerSeen = true
+            ui.setDuelStatus(null)
+            ui.setRoomCode(null)
+          } else if (duelPeerSeen) {
+            duelPeerSeen = false
+            game.duelTakeover()
+            ui.setRoomCode(null)
+          }
+        },
+      })
+    } catch {
+      if (token !== duelGen) return
+      ui.setDuelStatus('NETWORK DOWN · CPU RIVAL DEPLOYED')
+      beginDuel('', false)
+      return
+    }
+    if (token !== duelGen || !game) {
+      if (link) void link.close(0)
+      return
+    }
+    duelLink = link
+    beginDuel('RIVAL', true)
+    link.send({ t: 'hello', name: pilotName(), seq: 0 })
+    window.setTimeout(() => {
+      if (token !== duelGen || !game?.duel?.remote || duelPeerSeen) return
+      game.duelTakeover()
+      ui.setRoomCode(null)
+    }, DUEL.waitForPeerMs)
+  }
+  const duelGuard = (): number | null => {
+    if (!game || duelBusy) return null
+    duelBusy = true
+    const token = ++duelGen
+    ui.setRoomCode(null)
+    return token
+  }
+  const duelQuick = () => {
+    const token = duelGuard()
+    if (token === null) return
+    ui.setDuelStatus('CONNECTING…')
+    void (async () => {
+      const found = await quickMatch(pilotName(), s => {
+        if (token === duelGen) ui.setDuelStatus(s)
+      }).catch(() => null)
+      if (token !== duelGen) return
+      if (!found) {
+        ui.setDuelStatus('OFFLINE · CPU RIVAL DEPLOYED')
+        beginDuel('', false)
+      } else {
+        if (found.role === 'join') ui.setDuelStatus(`RIVAL FOUND · JOINING ${found.code}…`)
+        await openDuelRoom(found.code, token)
+      }
+      duelBusy = false
+    })().catch(() => {
+      duelBusy = false
+    })
+  }
+  const duelHost = () => {
+    const token = duelGuard()
+    if (token === null) return
+    void openDuelRoom(makeRoomCode(), token).finally(() => {
+      duelBusy = false
+    })
+  }
+  const duelJoin = (raw: string) => {
+    const token = duelGuard()
+    if (token === null) return
+    const code = normalizeRoomCode(raw)
+    if (!code) {
+      ui.setDuelStatus('BAD CODE · 6 CHARS A-Z 2-9')
+      duelBusy = false
+      return
+    }
+    void openDuelRoom(code, token).finally(() => {
+      duelBusy = false
+    })
+  }
+  const duelCancel = () => {
+    duelGen += 1
+    duelBusy = false
+    closeDuelLink()
+    ui.setDuelStatus(null)
+    ui.setRoomCode(null)
+  }
   const ui = new Ui(i18n, save, audio, {
     play: mode => startMatch(mode),
-    restart: () => startMatch(),
+    restart: () => {
+      // CPU-duel rematch stays a duel; anything else restarts normally.
+      if (game?.duel && !game.duel.remote) beginDuel('', false)
+      else {
+        closeDuelLink()
+        startMatch()
+      }
+    },
     resume,
     quit: () => {
+      closeDuelLink()
+      duelGen += 1
+      ui.setDuelStatus(null)
+      ui.setRoomCode(null)
       game?.toTitle()
       ui.resetHud()
       ui.show('title')
@@ -111,6 +250,10 @@ async function boot(): Promise<void> {
         ui.showAiDebrief(report)
       })().catch(error => ui.events.message(error instanceof Error ? error.message : 'AI DEBRIEF UNAVAILABLE', 'warn'))
     },
+    duelQuick,
+    duelHost,
+    duelJoin,
+    duelCancel,
   })
   cloud = new CloudServices(status => ui.setCloudStatus(status))
   ui.show('boot')
@@ -216,6 +359,10 @@ async function boot(): Promise<void> {
         const pxPerRad = window.innerHeight / 2 / Math.tan((g.camera.fov * Math.PI) / 360)
         ui.updateHud(g.hud(), g.standings(), input.held('scoreboard'), pxPerRad, frameSeconds)
       }
+      // Duel net pump: validated outbound messages go out, the link is dropped with the duel.
+      if (duelLink && g.duel?.remote) {
+        for (const m of g.duelDrain()) duelLink.send(m)
+      } else g.duelDrain()
     },
   })
   cancelAnimationFrame(bootRaf)
@@ -246,6 +393,12 @@ async function boot(): Promise<void> {
     ui.show('title')
     document.getElementById('boot-ph')?.remove()
     audio.playMusic('title', 1.5)
+    // Invite links land here: prefill the join box so one tap deploys.
+    const invite = roomCodeFromQuery(location.search)
+    if (invite) {
+      ui.setJoinCode(invite)
+      ui.setDuelStatus(`INVITE ${invite} · TAP JOIN TO DEPLOY`)
+    }
     // Background streaming starts once the title is up.
     window.setTimeout(() => loader.startBackground(), 600)
   }, 250)

@@ -9,6 +9,11 @@ const SESSION_KEY = 'worldwarb.supabase.session'
 
 export const supabaseConfigured = Boolean(URL && ANON_KEY)
 
+/** Raw endpoint + anon key for the lazy-loaded Realtime transport (null when offline). */
+export function supabaseEnv(): { url: string; key: string } | null {
+  return supabaseConfigured ? { url: URL, key: ANON_KEY } : null
+}
+
 function loadSession(): SupabaseSession | null {
   try {
     const raw = localStorage.getItem(SESSION_KEY)

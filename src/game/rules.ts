@@ -76,16 +76,21 @@ export function registerKill(s: MatchState, k: KillInfo): KillResult {
   const killer = combatants.find(c => c.id === k.killer)
   const medals: Medal[] = []
   const next: MatchState = { ...s, combatants, stats: { ...s.stats } }
-  if (!victim) return { state: s, medals }
-  victim.deaths += 1
-  victim.streak = 0
-  const suicide = !killer || killer.id === victim.id
+  // Race-mode bot kill: the victim is a bot, not a combatant (negative id).
+  // Only the frag is counted; no victim row exists to update.
+  const botKill = !victim && k.victim < 0
+  if (!victim && !botKill) return { state: s, medals }
+  if (victim) {
+    victim.deaths += 1
+    victim.streak = 0
+  }
+  const suicide = !killer || (victim !== undefined && killer.id === victim.id)
   if (suicide) {
-    victim.kills = Math.max(0, victim.kills - 1)
+    if (victim) victim.kills = Math.max(0, victim.kills - 1)
   } else {
-    killer.kills += 1
-    killer.streak += 1
-    if (killer.isPlayer) {
+    killer!.kills += 1
+    killer!.streak += 1
+    if (killer!.isPlayer) {
       if (!s.firstBlood) medals.push('first')
       if (k.headshot) {
         medals.push('headshot')
@@ -98,25 +103,38 @@ export function registerKill(s: MatchState, k: KillInfo): KillResult {
       else if (next.multiCount === 3) medals.push('triple')
       else if (next.multiCount > 3) medals.push('multi')
       if (next.multiCount >= 2) next.stats.multiKills += 1
-      if (killer.streak === 5) medals.push('spree')
-      else if (killer.streak === 10) medals.push('rampage')
-      else if (killer.streak === 15) medals.push('unstoppable')
-      if (victim.id === s.lastKillerOfPlayer) {
+      if (killer!.streak === 5) medals.push('spree')
+      else if (killer!.streak === 10) medals.push('rampage')
+      else if (killer!.streak === 15) medals.push('unstoppable')
+      if (victim && victim.id === s.lastKillerOfPlayer) {
         medals.push('revenge')
         next.lastKillerOfPlayer = -1
       }
-      next.stats.bestStreak = Math.max(next.stats.bestStreak, killer.streak)
+      next.stats.bestStreak = Math.max(next.stats.bestStreak, killer!.streak)
     }
     next.firstBlood = true
   }
-  if (victim.isPlayer) {
+  if (victim?.isPlayer) {
     next.multiCount = 0
     next.multiTimer = 0
-    if (!suicide) next.lastKillerOfPlayer = killer.id
+    if (!suicide) next.lastKillerOfPlayer = killer!.id
   }
   next.score = computeScore(next)
-  if (!suicide && killer.kills >= s.fragLimit) return { state: finish(next, 'frags'), medals }
+  if (!suicide && killer!.kills >= s.fragLimit) return { state: finish(next, 'frags'), medals }
   return { state: next, medals }
+}
+
+/** Race mode: a bot killed a combatant — count the death, never take a frag. */
+export function registerDeath(s: MatchState, victimId: number): MatchState {
+  if (s.phase !== 'playing') return s
+  const combatants = s.combatants.map(c => ({ ...c }))
+  const victim = combatants.find(c => c.id === victimId)
+  if (!victim) return s
+  victim.deaths += 1
+  victim.streak = 0
+  const next: MatchState = { ...s, combatants, stats: { ...s.stats }, multiCount: 0, multiTimer: 0 }
+  next.score = computeScore(next)
+  return next
 }
 
 function finish(s: MatchState, reason: 'frags' | 'time'): MatchState {

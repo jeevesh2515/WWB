@@ -18,7 +18,8 @@ import { Player } from './player'
 import { Pickups, Props } from './props'
 import { wornPaint, type RobotLook } from './robot'
 import { PlayerBody } from './playerbody'
-import { computeScore, createMatch, leader, placement, recordShot, registerKill, splashDamage, standings, tick, type MatchState, type Medal } from './rules'
+import { computeScore, createMatch, leader, placement, recordShot, registerDeath, registerKill, splashDamage, standings, tick, type MatchState, type Medal } from './rules'
+import { DUEL, RivalTrack, type DuelMsg, type DuelWeapon } from '../net/duel'
 import type { Staged, StageId } from './stages'
 import { tuning } from './tuning'
 import { Arsenal, type HitKind } from './weapons'
@@ -258,6 +259,14 @@ export class Game implements CombatWorld {
   mode: Mode = 'attract'
   gameMode: GameMode = 'onslaught'
   match: MatchState = createMatch(BOT_ROSTER.slice(0, CONFIG.bots.count).map(b => b.name))
+  /** 1v1 duel vs a single rival (dmBots[0]): remote human puppet or CPU. Null for FFA/onslaught. */
+  duel: { rivalId: number; rivalName: string; remote: boolean } | null = null
+  private duelOut: DuelMsg[] = []
+  private duelSeq = 0
+  private duelSendT = 0
+  private lastRivalK = 0
+  private rivalKDriftFrames = 0
+  private readonly rivalTrack = new RivalTrack()
   time = 0
   private countdownT = 0
   private lastCount = 0
@@ -516,7 +525,10 @@ export class Game implements CombatWorld {
       if (c.handle === excludeHandle) return false
       const t = this.tags.get(c.handle)
       if (worldOnly) return t?.kind === 'world'
-      if (t?.kind === 'bot' && !this.botById.get(t.id)?.alive) return false
+      if (t?.kind === 'bot') {
+        const b = this.botById.get(t.id)
+        if (!b?.alive || b.remote) return false
+      }
       if (t?.kind === 'drone' && !this.hornets[t.id]?.alive) return false
       if (t?.kind === 'player' && !this.player.alive) return false
       return true
@@ -559,6 +571,7 @@ export class Game implements CombatWorld {
   }
   private nameOf(id: number): string {
     if (id === 0) return 'YOU'
+    if (this.duel?.remote && id === this.duel.rivalId) return this.duel.rivalName
     if (id <= -100) return 'HOUND'
     if (id > 0) return this.botById.get(id)?.name ?? '?'
     return 'WORLD'
@@ -573,6 +586,8 @@ export class Game implements CombatWorld {
     if (!this.live) return { dealt: 0, killed: false, armor: false }
     if (target === 0) {
       if (this.mode !== 'playing' || !this.player.alive) return { dealt: 0, killed: false, armor: false }
+      // No PvP in bot races: rival cannot damage player.
+      if (this.duel && info.attacker === this.duel.rivalId) return { dealt: 0, killed: false, armor: false }
       const hadArmor = this.player.armor > 0
       let amount = info.attacker === 0 ? info.amount * 0.5 : info.amount
       if (this.onslaught && info.attacker !== 0) amount *= 0.85
@@ -601,6 +616,8 @@ export class Game implements CombatWorld {
     }
     const bot = this.botById.get(target)
     if (!bot || !bot.alive) return { dealt: 0, killed: false, armor: false }
+    // No PvP in bot races: player cannot damage rival, and remote rival is an untouchable ghost.
+    if (this.duel && target === this.duel.rivalId && (info.attacker === 0 || this.duel.remote)) return { dealt: 0, killed: false, armor: false }
     if (info.attacker === 0) info = { ...info, amount: info.amount * CONFIG.player.damageScale }
     const r = bot.takeDamage(info)
     if (info.attacker === 0 && this.mode === 'playing' && !this.onslaught) this.match = recordShot(this.match, 0, 0, r.dealt)
@@ -650,7 +667,7 @@ export class Game implements CombatWorld {
     }
     if (this.player.alive && this.mode === 'playing') hitOne(0, this.player.position, 0.9, false)
     const friendly = this.onslaught && attacker !== 0 && attacker !== -1
-    for (const b of this.bots) if (b.alive && !(friendly && b.wave)) hitOne(b.id, b.pos, 0.9 * b.scale, b.heavy)
+    for (const b of this.bots) if (b.alive && !b.remote && !(friendly && b.wave)) hitOne(b.id, b.pos, 0.9 * b.scale, b.heavy)
     for (const h of this.hornets) {
       if (!h.alive || friendly) continue
       const dist = h.pos.distanceTo(pos)
@@ -761,6 +778,9 @@ export class Game implements CombatWorld {
 
   private enterAttract(): void {
     this.mode = 'attract'
+    this.duel = null
+    this.duelOut = []
+    this.rivalTrack.reset()
     this.audio.restoreWorld()
     this.audio.setPaused(false)
     this.clearWorld()
@@ -796,15 +816,18 @@ export class Game implements CombatWorld {
     this.endOverdrive(true)
   }
 
-  start(mode: GameMode = this.gameMode): void {
+  start(mode: GameMode = this.gameMode, dmCount = CONFIG.bots.count): void {
     tuning.activate('run')
     this.audio.restoreWorld()
     this.audio.setPaused(false)
     this.clearWorld()
     this.gameMode = mode
     if (mode === 'deathmatch') this.ensureDmSentinels()
-    const count = Math.min(CONFIG.bots.count, this.dmBots.length)
+    const count = Math.min(dmCount, this.dmBots.length)
     this.match = { ...createMatch(this.dmBots.slice(0, count).map(b => b.name)), unranked: tuning.unranked }
+    this.duel = null
+    this.duelOut = []
+    this.rivalTrack.reset()
     this.renderer.fx.damage = 0
     this.renderer.fx.lowHealth = 0
     this.perks = {}
@@ -843,6 +866,107 @@ export class Game implements CombatWorld {
     this.audio.playMusic('combat', 2.5, true)
     // Current + next stage first; everything else streams in the background.
     void this.stageGate.ensure(2)
+  }
+
+  /**
+   * Bot race: local player + one rival (dmBots[0], remote ghost or CPU) hunting
+   * five bots for 3 minutes. No PvP — most bot kills wins.
+   */
+  startDuel(rivalName: string, remote: boolean): void {
+    this.start('deathmatch', 6)
+    const rival = this.dmBots[0]
+    rival.remote = remote
+    if (remote) rival.driveRemote(0, -50, 0, 0, false, 100, 0, false)
+    const name = remote ? rivalName : rival.name
+    this.match = { ...createMatch([rival.name], DUEL.seconds, DUEL.fragLimit), unranked: tuning.unranked }
+    this.match.combatants[1].name = name
+    this.duel = { rivalId: rival.id, rivalName: name, remote }
+    this.rivalTrack.reset()
+    this.lastRivalK = 0
+    this.rivalKDriftFrames = 0
+  }
+
+  /** Drain queued outbound duel messages (the lobby sends them). */
+  duelDrain(): DuelMsg[] {
+    if (!this.duelOut.length) return this.duelOut
+    const out = this.duelOut
+    this.duelOut = []
+    return out
+  }
+
+  private nextDuelSeq(): number {
+    this.duelSeq = (this.duelSeq + 1) & 0xffff
+    return this.duelSeq
+  }
+
+  private duelWeapon(s: DamageSource): DuelWeapon {
+    return s === 'rifle' || s === 'shotgun' || s === 'rocket' || s === 'grenade' || s === 'barrel' || s === 'fall' ? s : 'rifle'
+  }
+
+  /** Incoming validated duel message from the rival. */
+  duelApply(m: DuelMsg): void {
+    const d = this.duel
+    if (!d?.remote || this.mode === 'ended' || this.mode === 'attract') return
+    if (m.t === 'state') {
+      this.rivalTrack.push(m)
+      this.lastRivalK = Math.max(this.lastRivalK, m.k)
+      // Kill-counter resync: kill events are authoritative, totals only repair lost ones.
+      const rival = this.match.combatants.find(c => c.id === d.rivalId)
+      if (rival && m.k > rival.kills) {
+        this.rivalKDriftFrames += 1
+        if (m.k - rival.kills >= 2 || this.rivalKDriftFrames >= 4) {
+          rival.kills = m.k
+          this.match.score = computeScore(this.match)
+          this.rivalKDriftFrames = 0
+        }
+      } else {
+        this.rivalKDriftFrames = 0
+      }
+      return
+    }
+    if (m.t === 'hello') {
+      d.rivalName = m.name
+      const c = this.match.combatants.find(c => c.id === d.rivalId)
+      if (c) c.name = m.name
+      this.events.message(`${m.name} JOINED THE DUEL`, 'good')
+      return
+    }
+    if (m.t === 'bye') {
+      this.duelTakeover()
+      return
+    }
+    this.rivalKDriftFrames = 0
+    // Rival fragged a bot on their sim: count it here (their bots are local to them).
+    if (this.mode !== 'playing') return
+    const res = registerKill(this.match, { killer: d.rivalId, victim: -2, headshot: m.headshot, weapon: m.source })
+    this.match = res.state
+    this.lastRivalK = Math.max(this.lastRivalK, this.match.combatants.find(c => c.id === d.rivalId)?.kills ?? 0)
+    const rivalBot = this.botById.get(d.rivalId)
+    this.events.killfeed(this.feedEntry(d.rivalId, -2, {
+      attacker: d.rivalId, amount: 0, source: m.source,
+      from: (rivalBot?.pos ?? this.player.position).clone(), headshot: m.headshot,
+    }, 'BOT'))
+    if (this.match.phase !== 'playing') this.endMatch()
+  }
+
+  /** Rival left mid-duel: a CPU pilot takes over the puppet so the match stays live. */
+  duelTakeover(): void {
+    const d = this.duel
+    if (!d?.remote) return
+    d.remote = false
+    const b = this.botById.get(d.rivalId)
+    if (b) {
+      b.remote = false
+      d.rivalName = b.name
+      const c = this.match.combatants.find(c => c.id === d.rivalId)
+      if (c) c.name = b.name
+      if (!b.alive) {
+        const s = this.chooseSpawn(b.id)
+        b.spawn(s.pos, s.yaw)
+        this.fx.spawnPortal(s.pos, 1)
+      }
+    }
+    this.events.message('RIVAL LEFT · CPU TOOK OVER', 'warn')
   }
 
   private upgradeRocket(): void {
@@ -983,6 +1107,30 @@ export class Game implements CombatWorld {
       if (this.mode === 'attract') this.events.killfeed(this.feedEntry(killer, victim, info))
       return
     }
+    // Bot race: combatants are YOU + RIVAL only. Bot frags count via victim -2;
+    // deaths never cost a frag; downing the CPU rival scores nothing.
+    if (this.duel) {
+      const d = this.duel
+      if (victim === 0 || victim === d.rivalId) {
+        this.match = registerDeath(this.match, victim)
+        this.events.killfeed(this.feedEntry(killer, victim, info))
+        return
+      }
+      if (killer === 0 || killer === d.rivalId) {
+        const res = registerKill(this.match, { killer, victim: -2, headshot: info.headshot, weapon: info.source })
+        this.match = res.state
+        this.events.killfeed(this.feedEntry(killer, victim, info, 'BOT'))
+        if (killer === 0 && res.medals.length) {
+          this.events.medals(res.medals)
+          this.audio.cue('medal', 0.9)
+        }
+        if (killer === 0 && d.remote) {
+          this.duelOut.push({ t: 'kill', source: this.duelWeapon(info.source), headshot: !!info.headshot, seq: this.nextDuelSeq() })
+        }
+        if (this.match.phase !== 'playing') this.endMatch()
+      }
+      return
+    }
     const k = killer < 0 ? victim : killer
     const res = registerKill(this.match, { killer: k, victim, headshot: info.headshot, weapon: info.source })
     this.match = res.state
@@ -1023,7 +1171,13 @@ export class Game implements CombatWorld {
         kills: this.kills, headshots: this.headshots, accuracy: this.shots ? this.hits / this.shots : 0,
         bestRank: RANKS[this.style.best], time: this.runTime, unranked: tuning.unranked,
       }
-    } else this.match = { ...this.match, score: computeScore(this.match) }
+    } else {
+      if (this.duel) {
+        const rival = this.match.combatants.find(c => c.id === this.duel!.rivalId)
+        if (rival && this.lastRivalK > rival.kills) rival.kills = this.lastRivalK
+      }
+      this.match = { ...this.match, score: computeScore(this.match) }
+    }
     // Results screen: no music, no lingering gunfire/explosions/footsteps from the slow-mo world.
     this.audio.silenceWorld(0.3)
     const victory = this.match.phase === 'won'
@@ -1401,13 +1555,22 @@ export class Game implements CombatWorld {
     // Robots.
     const targets: Target[] = []
     if (this.mode !== 'attract') targets.push({ id: 0, pos: this.player.position, vel: this.player.velocity, alive: this.player.alive && this.player.protect <= 0, isPlayer: true, h: 1 - this.player.crouch * 0.45 })
-    if (!this.onslaught) for (const b of this.dmBots) targets.push({ id: b.id, pos: b.pos, vel: b.vel, alive: b.alive, isPlayer: false })
+    if (!this.onslaught) for (const b of this.dmBots) if (!b.remote) targets.push({ id: b.id, pos: b.pos, vel: b.vel, alive: b.alive, isPlayer: false })
     const items: ItemInfo[] = this.onslaught ? [] : this.pickups.list.map(p => ({ pos: p.spot.pos, kind: p.spot.kind, available: p.available }))
-    const ctx: BrainContext = { targets, items, hotspots: this.hotspots, playerEye: this.eyePos, playerId: 0, frozen: this.mode === 'countdown' || this.mode === 'ended' }
-    const activeDm = this.mode === 'attract' ? 6 : this.onslaught ? 0 : Math.min(CONFIG.bots.count, this.dmBots.length)
+    const ctx: BrainContext = {
+      targets, items, hotspots: this.hotspots, playerEye: this.eyePos, playerId: 0,
+      frozen: this.mode === 'countdown' || this.mode === 'ended',
+      duelRivalId: this.duel ? this.duel.rivalId : undefined,
+    }
+    const activeDm = this.duel ? 6 : this.mode === 'attract' ? 6 : this.onslaught ? 0 : Math.min(CONFIG.bots.count, this.dmBots.length)
     for (let i = 0; i < this.dmBots.length; i += 1) {
       const b = this.dmBots[i]
       if (i >= activeDm) continue
+      if (b.remote) {
+        const pose = this.rivalTrack.sample()
+        if (pose) b.driveRemote(pose.x, pose.y, pose.z, pose.yaw, pose.alive, pose.hp, dt, false)
+        continue
+      }
       if (!b.alive) {
         b.respawnIn -= dt
         if (b.respawnIn <= 0 && this.mode !== 'ended') {
@@ -1436,13 +1599,26 @@ export class Game implements CombatWorld {
     this.stepShards(dt)
     this.props.update(dt, this, pos => {
       if (this.player.alive && this.player.position.distanceTo(pos) < 1.4) return true
-      return this.bots.some(b => b.alive && b.pos.distanceTo(pos) < 1.4 * b.scale)
+      return this.bots.some(b => b.alive && !b.remote && b.pos.distanceTo(pos) < 1.4 * b.scale)
     })
     this.pickups.update(dt, this.time)
     this.collectPickups()
     if (playing && !this.onslaught) {
       this.match = tick(this.match, dt)
       if (this.match.phase !== 'playing') this.endMatch()
+      if (this.duel?.remote && this.match.phase === 'playing') {
+        this.duelSendT -= dt
+        if (this.duelSendT <= 0) {
+          this.duelSendT = 1 / DUEL.stateHz
+          const p = this.player.position
+          const r2 = (v: number) => Math.round(v * 100) / 100
+          this.duelOut.push({
+            t: 'state', x: r2(p.x), y: r2(p.y), z: r2(p.z), yaw: Math.round(this.player.yaw * 1000) / 1000,
+            hp: Math.max(0, Math.ceil(this.player.health)), alive: this.player.alive,
+            k: this.match.combatants[0].kills, seq: this.nextDuelSeq(),
+          })
+        }
+      }
     }
     this.physics.step(dt)
   }
@@ -1909,7 +2085,7 @@ export class Game implements CombatWorld {
       reloading: a.reloading > 0 ? 1 - a.reloading / a.reloadTotal : 0,
       timeLeft: this.onslaught ? this.runTime : this.match.timeLeft,
       kills: this.onslaught ? this.kills : me.kills,
-      fragLimit: this.match.fragLimit,
+      fragLimit: this.duel ? 0 : this.match.fragLimit,
       leaderName: top.name,
       leaderKills: top.kills,
       place: placement(this.match),

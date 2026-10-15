@@ -22,6 +22,10 @@ export type UiActions = {
   accountSignUp(email: string, password: string): void
   accountSignOut(): void
   requestDebrief(): void
+  duelQuick(): void
+  duelHost(): void
+  duelJoin(code: string): void
+  duelCancel(): void
 }
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', html = ''): HTMLElementTagNameMap[K] => {
@@ -89,6 +93,9 @@ export class Ui {
   private accountStatusEl!: HTMLElement
   private accountPanel!: HTMLElement
   private aiDebriefEl!: HTMLElement
+  private duelStatusEl!: HTMLElement
+  private duelCodeEl!: HTMLElement
+  private duelInput!: HTMLInputElement
   private tipT = 0
   private tipI = 0
   mode: GameMode = 'onslaught'
@@ -247,6 +254,29 @@ export class Ui {
       this.button(this.t.t('menu.controls'), () => this.push('controls'), 'opt-btn'),
       this.button(this.t.t('menu.settings'), () => this.push('settings'), 'opt-btn'),
     )
+    // 1v1 world duel: quick match, host-with-code, or join-with-code. CPU fills in offline.
+    const duel = el('div', 'duel')
+    duel.innerHTML = `<div class="duel-head">DUEL · 1V1 BOT RACE <small>3 MIN · MOST BOT KILLS WINS · NO PVP · CPU FILLS IN WHEN NO RIVAL IS ONLINE</small></div>
+      <div class="duel-status"></div><div class="duel-code" hidden></div>`
+    const row = el('div', 'duel-row')
+    row.append(
+      this.button('QUICK DUEL', () => this.actions.duelQuick(), 'opt-btn duel-btn'),
+      this.button('HOST · GET CODE', () => this.actions.duelHost(), 'opt-btn duel-btn'),
+      this.button('CANCEL', () => this.actions.duelCancel(), 'opt-btn duel-btn'),
+    )
+    const join = el('div', 'duel-row')
+    this.duelInput = el('input', 'duel-input')
+    this.duelInput.placeholder = 'ROOM CODE'
+    this.duelInput.maxLength = 7
+    this.duelInput.autocapitalize = 'characters'
+    this.duelInput.spellcheck = false
+    join.append(this.duelInput, this.button('JOIN', () => this.actions.duelJoin(this.duelInput.value), 'opt-btn duel-btn'))
+    duel.append(row, join)
+    n.querySelector('.menu-options')!.after(duel)
+    this.duelStatusEl = duel.querySelector<HTMLElement>('.duel-status')!
+    this.duelCodeEl = duel.querySelector<HTMLElement>('.duel-code')!
+    const note = el('div', 'sim-note', 'TITLE ARENA IS A BOT SIMULATION · SCORES DRIFT BOTH WAYS UNTIL YOU DEPLOY')
+    n.querySelector('.best')!.after(note)
     this.accountPanel = n.querySelector<HTMLElement>('.account')!
     this.accountStatusEl = n.querySelector<HTMLElement>('.account-status')!
     const accountActions = n.querySelector<HTMLElement>('.account-actions')!
@@ -264,6 +294,33 @@ export class Ui {
     if (!this.accountStatusEl) return
     this.accountStatusEl.textContent = status.user ? `${status.message} · ${status.user.email ?? 'PILOT'}` : status.message
     this.accountPanel.classList.toggle('online', Boolean(status.user))
+  }
+
+  setDuelStatus(text: string | null): void {
+    if (!this.duelStatusEl) return
+    this.duelStatusEl.textContent = text ?? ''
+    this.duelStatusEl.classList.toggle('on', !!text)
+  }
+
+  /** Show the hosted room code with a copy-invite button (null hides it). */
+  setRoomCode(code: string | null, inviteUrl?: string): void {
+    if (!this.duelCodeEl) return
+    this.duelCodeEl.hidden = !code
+    if (!code) return
+    this.duelCodeEl.innerHTML = ''
+    const b = el('span', '', `ROOM <b>${code}</b> · SHARE THE CODE OR LINK`)
+    const copy = el('button', 'btn opt-btn duel-btn', 'COPY INVITE')
+    copy.addEventListener('click', () => {
+      const text = inviteUrl ?? code
+      if (navigator.clipboard) void navigator.clipboard.writeText(text).catch(() => {})
+      copy.textContent = 'COPIED'
+      window.setTimeout(() => (copy.textContent = 'COPY INVITE'), 1500)
+    })
+    this.duelCodeEl.append(b, copy)
+  }
+
+  setJoinCode(code: string): void {
+    if (this.duelInput) this.duelInput.value = code
   }
 
   private refreshTitle(): void {
@@ -400,7 +457,7 @@ export class Ui {
     if (!ons) {
       set('kills', String(h.kills))
       set('clock', formatClock(h.timeLeft))
-      set('limit', this.t.t('hud.limit', { n: h.fragLimit }))
+      set('limit', h.fragLimit > 0 ? this.t.t('hud.limit', { n: h.fragLimit }) : 'MOST KILLS WINS')
       set('leaderName', h.leaderName === 'YOU' ? this.t.t('hud.leader') : h.leaderName)
       set('leaderKills', String(h.leaderKills))
       set('place', `${ordinal(h.place)} PLACE`)

@@ -112,6 +112,22 @@ canvas.sparks { position: absolute; inset: 0; width: 100%; height: 100%; pointer
 .btn.opt-btn { min-width: 155px; padding: 11px 18px; font-size: 13px; letter-spacing: 0.14em; justify-content: center; background: rgba(22, 14, 10, 0.85); box-shadow: inset 0 0 0 1px rgba(255, 170, 80, 0.22); }
 .btn.opt-btn:hover { transform: translateY(-2px); }
 .btn.mode-card { min-width: 380px; padding: 16px 22px; }
+
+/* ─── 1v1 duel lobby ─────────────────────────────────────────────────── */
+.duel { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; padding: 12px 14px; background: rgba(20, 12, 8, 0.72); box-shadow: inset 0 0 0 1px rgba(255, 170, 80, 0.25); max-width: 560px; }
+.duel-head { font: 700 12px var(--display); letter-spacing: 0.22em; color: var(--amber-hi); }
+.duel-head small { display: block; margin-top: 3px; font-size: 10px; letter-spacing: 0.14em; color: var(--dim); }
+.duel-row { display: flex; gap: 10px; }
+.btn.duel-btn { min-width: 0; padding: 9px 14px; font-size: 12px; }
+.duel-input { flex: 1; min-width: 0; background: rgba(0, 0, 0, 0.55); border: 1px solid rgba(255, 170, 80, 0.35); color: #ffd9a0; font: 700 14px var(--hud); letter-spacing: 0.3em; text-transform: uppercase; padding: 9px 12px; outline: none; }
+.duel-input:focus { border-color: var(--amber-hi); box-shadow: 0 0 14px rgba(255, 150, 50, 0.35); }
+.duel-status { display: none; font: 700 12px var(--hud); letter-spacing: 0.18em; color: #ffd9a0; }
+.duel-status.on { display: block; animation: duelBlink 1.1s ease-in-out infinite; }
+@keyframes duelBlink { 50% { opacity: 0.55; } }
+.duel-code { display: flex; align-items: center; gap: 12px; font: 700 13px var(--hud); letter-spacing: 0.14em; color: #ffd9a0; }
+.duel-code[hidden] { display: none; }
+.duel-code b { font-size: 20px; letter-spacing: 0.3em; color: #fff; }
+.sim-note { font: 600 10px var(--hud); letter-spacing: 0.2em; color: var(--dim); opacity: 0.8; }
 .menu.row-end { flex-direction: row; justify-content: flex-end; margin-top: 22px; }
 .menu.row-end .btn { min-width: 170px; justify-content: center; }
 

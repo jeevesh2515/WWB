@@ -90,6 +90,8 @@ As **Kai**, a frontline spec-ops operator, hold a storm-lit industrial container
 - **Multiple Game Modes**:
   - 🏆 **Bugfront (Onslaught)**: 8 escalating waves ending in the Warden boss encounter.
   - 💀 **Deathmatch**: High-speed 6-bot arena combat (first to 20 frags).
+  - ⚔️ **Duel (1v1 Bot Race)**: You + one rival hunting the same bot pack for 3 minutes — no PvP, most bot kills wins. QUICK DUEL finds a random opponent, HOST gives you a 6-letter room code (share the code or invite link), JOIN enters a friend's code. Kills stay in sync by design: each side is authoritative for its own frags and broadcasts them; totals in every state packet repair any lost event. No rival online within ~15 seconds (or no network) → a CPU pilot fills in automatically; if your rival quits mid-race, the CPU takes over so the match stays live.
+- **Title Backdrop Is a Simulation**: The landing-page arena behind the menu is bots fighting bots (scores drift both ways). Your real match starts only after you pick a mode.
 
 ---
 
@@ -123,11 +125,15 @@ WWB/
 │   ├── engine/              # Rapier 3D WASM physics bridge, fixed-step tick, input system
 │   ├── game/
 │   │   ├── game.ts          # Match orchestrator, damage arcs, combat resolution
+│   │   ├── rules.ts         # Pure match rules, frag/death tracking, medals, score calculation
 │   │   ├── onslaught.ts     # Pure wave director, style meter calculation, perk logic
 │   │   ├── weapons.ts       # Weapon mechanics, recoil curves, hitscan & projectile ballistics
-│   │   ├── bots.ts          # Enemy AI navigation, combat routines, IK aiming
+│   │   ├── bots.ts          # Enemy AI navigation, combat routines, IK aiming, puppet driver
 │   │   ├── stages.ts        # Staged asset loader with background streaming queue
 │   │   └── arena.ts         # Procedural ISO 6346 shipping containers & Kestrel port deck
+│   ├── net/
+│   │   ├── duel.ts          # Pure 1v1 netcode, room code generator, wire validation, rival interpolation
+│   │   └── lobby.ts         # Lazy-loaded Supabase Realtime broadcast & presence transport
 │   ├── ui/
 │   │   ├── ui.ts            # HUD render layer, modal dialogs, title screen
 │   │   ├── icons.ts         # High-definition inline SVG vector icon system (zero network overhead)
@@ -157,6 +163,7 @@ World War B runs 100% offline out-of-the-box, but also features seamless **Supab
 2. **Cloud Persistence**: Your best wave, high scores, style ranks, and combat statistics automatically sync across devices.
 3. **Database Schema**: Pre-built migration provided in [`supabase/migrations/001_worldwarb.sql`](supabase/migrations/001_worldwarb.sql).
 4. **Security by Design**: The client uses only browser-safe public `anon` credentials (`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`). `service_role` secrets and database passwords are never bundled or exposed.
+5. **1v1 Duels Need Realtime**: Random/code-match duels ride on Supabase Realtime broadcast + presence (no tables, no migration). Enable Realtime in your Supabase project; without it (or offline) duels fall back to a CPU rival automatically.
 
 ---
 
