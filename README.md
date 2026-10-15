@@ -62,6 +62,12 @@
 *Stackable perks between waves powered by our custom high-visibility glowing vector SVG icon system.*
 <img src="docs/screenshots/05_choose_augment.png" alt="Choose An Augment Perk Selection" width="95%" />
 
+<br/><br/>
+
+### ⚔️ 1v1 Bot Race Duel Staging Lobby
+*Real-time staging room with 1-click room code & invite link copy, instant peer discovery, and host-controlled match start.*
+<img src="docs/screenshots/06_duel_lobby.png" alt="1v1 Duel Staging Lobby and Room Code Share" width="95%" />
+
 </div>
 
 ---
@@ -90,7 +96,12 @@ As **Kai**, a frontline spec-ops operator, hold a storm-lit industrial container
 - **Multiple Game Modes**:
   - 🏆 **Bugfront (Onslaught)**: 8 escalating waves ending in the Warden boss encounter.
   - 💀 **Deathmatch**: High-speed 6-bot arena combat (first to 20 frags).
-  - ⚔️ **Duel (1v1 Bot Race)**: You + one rival hunting the same bot pack for 3 minutes — no PvP, most bot kills wins. QUICK DUEL finds a random opponent, HOST gives you a 6-letter room code (share the code or invite link), JOIN enters a friend's code. Kills stay in sync by design: each side is authoritative for its own frags and broadcasts them; totals in every state packet repair any lost event. No rival online within ~15 seconds (or no network) → a CPU pilot fills in automatically; if your rival quits mid-race, the CPU takes over so the match stays live.
+  - ⚔️ **Duel (1v1 Bot Race)**: You + one rival hunting the same bot pack for 3 minutes — no PvP, most bot kills wins.
+    - **Staging Room & 1-Click Sharing**: Clicking `HOST · GET CODE` generates a clean 6-character room code in a dedicated staging lobby. Click either the room badge or `COPY CODE` / `COPY INVITE LINK` to copy to clipboard in one click.
+    - **Instant Peer Discovery**: When your friend enters your code and clicks `JOIN`, the host's screen instantly reflects `🟢 RIVAL JOINED` in real-time and activates the glowing `START MATCH` button.
+    - **Synchronized Launch**: The host controls match launch. Clicking start simultaneously transitions both players into a synchronized 3-second combat countdown (`3... 2... 1... FIGHT!`).
+    - **Live Score Synchronization**: Each client is authoritative for its own frags and broadcasts kill events over Supabase Realtime broadcast; state packets continuously repair any packet loss.
+    - **Seamless CPU Fallback**: Start solo vs CPU at any time (`START NOW (VS CPU)`), or if a peer disconnects mid-match, an AI pilot takes over the puppet immediately so combat never halts.
 - **Title Backdrop Is a Simulation**: The landing-page arena behind the menu is bots fighting bots (scores drift both ways). Your real match starts only after you pick a mode.
 
 ---
@@ -192,8 +203,11 @@ Open [http://localhost:5173/](http://localhost:5173/) to play and test locally.
 # Typecheck + Vite production bundle + wire size budget check
 pnpm build
 
-# Run Vitest test suite (pure game rules, style meter, onslaught, save store)
+# Run Vitest test suite (pure game rules, style meter, onslaught, save store, duel wire protocol)
 pnpm test
+
+# Run multi-window Playwright verification (host lobby + joiner + synchronized start + live score sync)
+pnpm run test:duel
 
 # Run headless smoke test with automated screenshots
 pnpm smoke

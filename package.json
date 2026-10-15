@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "smoke": "node scripts/smoke.mjs",
+    "test:duel": "node scripts/verify-duel-lobby.mjs",
     "manus:build-source": "tsc --noEmit && vite build && node scripts/check-size.mjs"
   },
   "dependencies": {
