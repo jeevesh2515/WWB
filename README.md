@@ -4,6 +4,7 @@
 ### *Hyper-Real, Style-Ranked 3D Browser First-Person Shooter*
 
 [![Play Live](https://img.shields.io/badge/PLAY_NOW-GitHub_Pages-FF9A2E?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jeevesh2515.github.io/WWB/)
+[![Star Repository](https://img.shields.io/github/stars/jeevesh2515/WWB?style=for-the-badge&label=⭐_Star_Project&color=238636)](https://github.com/jeevesh2515/WWB)
 [![Build & Deploy](https://img.shields.io/github/actions/workflow/status/jeevesh2515/WWB/deploy-pages.yml?style=for-the-badge&label=Deployment)](https://github.com/jeevesh2515/WWB/actions)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL_3D-black?style=for-the-badge&logo=threedotjs&logoColor=white)](https://threejs.org/)
@@ -13,9 +14,17 @@
 
 <br/>
 
-[**🚀 PLAY THE LIVE GAME IN YOUR BROWSER →**](https://jeevesh2515.github.io/WWB/)
+### [**🎮 ▶ CLICK HERE TO PLAY LIVE IN YOUR BROWSER (ZERO INSTALL) ◀ 🎮**](https://jeevesh2515.github.io/WWB/)
 
-*Zero installation. Instant load. Runs directly in Chrome, Brave, Firefox, Edge, and Safari with gamepad & keyboard/mouse support.*
+*Zero downloads. Zero plugins. Instant 60 FPS combat directly in Chrome, Brave, Firefox, Edge, or Safari with full keyboard/mouse and gamepad support.*
+
+<br/>
+
+<a href="https://jeevesh2515.github.io/WWB/">
+  <img src="docs/screenshots/gameplay_demo.gif" alt="World War B: Bugfront 60FPS Browser Gameplay Preview" width="100%" />
+</a>
+
+*⚡ Actual in-game combat footage: Three.js WebGL rendering + Rapier WASM physics running live at 60 FPS.*
 
 </div>
 
@@ -205,5 +214,19 @@ pnpm smoke
 ---
 
 <div align="center">
-  <sub>World War B: Bugfront · Built with passion for open-web gaming.</sub>
+
+### 🎮 Ready to drop into Kestrel Terminal?
+
+[![Play Live in Browser](https://img.shields.io/badge/▶_PLAY_FREE_NOW-Instant_Browser_Play-FF9A2E?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jeevesh2515.github.io/WWB/)
+&nbsp;&nbsp;
+[![Star on GitHub](https://img.shields.io/github/stars/jeevesh2515/WWB?style=for-the-badge&label=⭐_Star_Repository&color=238636)](https://github.com/jeevesh2515/WWB)
+
+<br/>
+
+*If you enjoyed the game or find the Three.js + Rapier WASM codebase useful, please drop a ⭐ star on the repository—it helps indie open-web gaming reach more players!*
+
+<br/>
+
+<sub>World War B: Bugfront · MIT Licensed · Built with passion for open-web gaming.</sub>
+
 </div>
