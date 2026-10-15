@@ -34,9 +34,9 @@
 
 <div align="center">
 
-### 🎮 Tactical Landing Page & Mode Selection
-*High-production Orbitron typography, cinematic soldier combat backdrop, and real-time cloud profile sync.*
-<img src="docs/screenshots/01_landing_page.png" alt="World War B Landing Page" width="95%" />
+### 🎮 Tactical Landing Page, Operations & 1v1 Duel Lobby
+*High-production Orbitron typography, cinematic soldier combat backdrop, real-time cloud profile sync, and 1-click 1v1 Duel room staging.*
+<img src="docs/screenshots/01_landing_page.png" alt="World War B Tactical Landing Page and Duel Lobby" width="95%" />
 
 <br/><br/>
 
@@ -61,12 +61,6 @@
 ### 🛡️ Tactical Augment Perks Selection
 *Stackable perks between waves powered by our custom high-visibility glowing vector SVG icon system.*
 <img src="docs/screenshots/05_choose_augment.png" alt="Choose An Augment Perk Selection" width="95%" />
-
-<br/><br/>
-
-### ⚔️ 1v1 Bot Race Duel Staging Lobby
-*Real-time staging room with 1-click room code & invite link copy, instant peer discovery, and host-controlled match start.*
-<img src="docs/screenshots/06_duel_lobby.png" alt="1v1 Duel Staging Lobby and Room Code Share" width="95%" />
 
 </div>
 
