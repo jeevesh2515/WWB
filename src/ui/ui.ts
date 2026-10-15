@@ -25,7 +25,15 @@ export type UiActions = {
   duelQuick(): void
   duelHost(): void
   duelJoin(code: string): void
+  duelStart(): void
   duelCancel(): void
+}
+
+export type RoomLobbyState = {
+  code: string
+  isHost: boolean
+  rivalName?: string | null
+  inviteUrl?: string
 }
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', html = ''): HTMLElementTagNameMap[K] => {
@@ -94,8 +102,14 @@ export class Ui {
   private accountPanel!: HTMLElement
   private aiDebriefEl!: HTMLElement
   private duelStatusEl!: HTMLElement
-  private duelCodeEl!: HTMLElement
   private duelInput!: HTMLInputElement
+  private duelRoomPanel!: HTMLElement
+  private duelRoomBadge!: HTMLElement
+  private duelRoomStatusEl!: HTMLElement
+  private duelStartBtn!: HTMLButtonElement
+  private duelCopyCodeBtn!: HTMLButtonElement
+  private duelCopyLinkBtn!: HTMLButtonElement
+  private currentRoomLobby: RoomLobbyState | null = null
   private tipT = 0
   private tipI = 0
   mode: GameMode = 'onslaught'
@@ -257,14 +271,30 @@ export class Ui {
     // 1v1 world duel: quick match, host-with-code, or join-with-code. CPU fills in offline.
     const duel = el('div', 'duel')
     duel.innerHTML = `<div class="duel-head">DUEL · 1V1 BOT RACE <small>3 MIN · MOST BOT KILLS WINS · NO PVP · CPU FILLS IN WHEN NO RIVAL IS ONLINE</small></div>
-      <div class="duel-status"></div><div class="duel-code" hidden></div>`
-    const row = el('div', 'duel-row')
+      <div class="duel-status"></div>
+      <div class="duel-room-panel" hidden>
+        <div class="duel-room-code-wrap">
+          <div>
+            <span class="duel-room-code-title">ROOM CODE: </span>
+            <span class="duel-room-code-badge">------</span>
+          </div>
+          <div class="duel-room-btns">
+            <button class="btn opt-btn duel-btn duel-copy-code-btn" type="button">COPY CODE</button>
+            <button class="btn opt-btn duel-btn duel-copy-link-btn" type="button">COPY INVITE LINK</button>
+          </div>
+        </div>
+        <div class="duel-room-status"></div>
+        <div class="duel-room-actions">
+          <button class="btn opt-btn duel-btn duel-start-btn" type="button">START MATCH</button>
+          <button class="btn opt-btn duel-btn duel-room-cancel-btn" type="button">CANCEL</button>
+        </div>
+      </div>`
+    const row = el('div', 'duel-row duel-idle-row')
     row.append(
       this.button('QUICK DUEL', () => this.actions.duelQuick(), 'opt-btn duel-btn'),
       this.button('HOST · GET CODE', () => this.actions.duelHost(), 'opt-btn duel-btn'),
-      this.button('CANCEL', () => this.actions.duelCancel(), 'opt-btn duel-btn'),
     )
-    const join = el('div', 'duel-row')
+    const join = el('div', 'duel-row duel-idle-row')
     this.duelInput = el('input', 'duel-input')
     this.duelInput.placeholder = 'ROOM CODE'
     this.duelInput.maxLength = 7
@@ -274,7 +304,31 @@ export class Ui {
     duel.append(row, join)
     n.querySelector('.menu-options')!.after(duel)
     this.duelStatusEl = duel.querySelector<HTMLElement>('.duel-status')!
-    this.duelCodeEl = duel.querySelector<HTMLElement>('.duel-code')!
+    this.duelRoomPanel = duel.querySelector<HTMLElement>('.duel-room-panel')!
+    this.duelRoomBadge = duel.querySelector<HTMLElement>('.duel-room-code-badge')!
+    this.duelRoomBadge.title = 'Click to copy code'
+    this.duelRoomStatusEl = duel.querySelector<HTMLElement>('.duel-room-status')!
+    this.duelStartBtn = duel.querySelector<HTMLButtonElement>('.duel-start-btn')!
+    this.duelCopyCodeBtn = duel.querySelector<HTMLButtonElement>('.duel-copy-code-btn')!
+    this.duelCopyLinkBtn = duel.querySelector<HTMLButtonElement>('.duel-copy-link-btn')!
+    const roomCancelBtn = duel.querySelector<HTMLButtonElement>('.duel-room-cancel-btn')!
+    roomCancelBtn.addEventListener('click', () => this.actions.duelCancel())
+    this.duelStartBtn.addEventListener('click', () => this.actions.duelStart())
+    const copyCodeAction = () => {
+      if (!this.currentRoomLobby) return
+      this.copyToClip(this.currentRoomLobby.code)
+      this.duelCopyCodeBtn.textContent = '✓ COPIED CODE'
+      window.setTimeout(() => (this.duelCopyCodeBtn.textContent = 'COPY CODE'), 1500)
+    }
+    this.duelCopyCodeBtn.addEventListener('click', copyCodeAction)
+    this.duelRoomBadge.addEventListener('click', copyCodeAction)
+    this.duelCopyLinkBtn.addEventListener('click', () => {
+      if (!this.currentRoomLobby) return
+      const link = this.currentRoomLobby.inviteUrl ?? this.currentRoomLobby.code
+      this.copyToClip(link)
+      this.duelCopyLinkBtn.textContent = '✓ COPIED LINK'
+      window.setTimeout(() => (this.duelCopyLinkBtn.textContent = 'COPY INVITE LINK'), 1500)
+    })
     const note = el('div', 'sim-note', 'TITLE ARENA IS A BOT SIMULATION · SCORES DRIFT BOTH WAYS UNTIL YOU DEPLOY')
     n.querySelector('.best')!.after(note)
     this.accountPanel = n.querySelector<HTMLElement>('.account')!
@@ -302,21 +356,62 @@ export class Ui {
     this.duelStatusEl.classList.toggle('on', !!text)
   }
 
-  /** Show the hosted room code with a copy-invite button (null hides it). */
+  /** Display the staging room panel with code, copy buttons, and start controls. */
+  setRoomLobby(opts: RoomLobbyState | null): void {
+    this.currentRoomLobby = opts
+    if (!this.duelRoomPanel) return
+    const idleRows = this.screens.get('title')?.querySelectorAll<HTMLElement>('.duel-idle-row')
+    if (!opts) {
+      this.duelRoomPanel.hidden = true
+      idleRows?.forEach(r => (r.hidden = false))
+      return
+    }
+    idleRows?.forEach(r => (r.hidden = true))
+    this.duelRoomPanel.hidden = false
+    this.duelRoomBadge.textContent = opts.code
+    if (opts.isHost) {
+      if (opts.rivalName) {
+        this.duelRoomStatusEl.className = 'duel-room-status ready'
+        this.duelRoomStatusEl.textContent = `🟢 RIVAL JOINED: ${opts.rivalName} · CLICK START MATCH!`
+        this.duelStartBtn.hidden = false
+        this.duelStartBtn.textContent = `START MATCH (VS ${opts.rivalName})`
+        this.duelStartBtn.className = 'btn opt-btn duel-btn duel-start-btn'
+      } else {
+        this.duelRoomStatusEl.className = 'duel-room-status waiting'
+        this.duelRoomStatusEl.textContent = `⏳ WAITING FOR RIVAL TO JOIN… SHARE THE CODE OR LINK`
+        this.duelStartBtn.hidden = false
+        this.duelStartBtn.textContent = 'START NOW (VS CPU)'
+        this.duelStartBtn.className = 'btn opt-btn duel-btn'
+      }
+    } else {
+      this.duelRoomStatusEl.className = 'duel-room-status waiting'
+      this.duelRoomStatusEl.textContent = opts.rivalName
+        ? `🟢 CONNECTED TO HOST: ${opts.rivalName} · WAITING FOR HOST TO START…`
+        : `⏳ CONNECTED TO ROOM ${opts.code} · WAITING FOR HOST TO START MATCH…`
+      this.duelStartBtn.hidden = true
+    }
+  }
+
+  private copyToClip(text: string): void {
+    if (navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(text).catch(() => {})
+    } else {
+      const ta = document.createElement('textarea')
+      ta.value = text
+      document.body.appendChild(ta)
+      ta.select()
+      try { document.execCommand('copy') } catch {}
+      ta.remove()
+    }
+  }
+
+  /** Legacy helper retained for compatibility. */
   setRoomCode(code: string | null, inviteUrl?: string): void {
-    if (!this.duelCodeEl) return
-    this.duelCodeEl.hidden = !code
-    if (!code) return
-    this.duelCodeEl.innerHTML = ''
-    const b = el('span', '', `ROOM <b>${code}</b> · SHARE THE CODE OR LINK`)
-    const copy = el('button', 'btn opt-btn duel-btn', 'COPY INVITE')
-    copy.addEventListener('click', () => {
-      const text = inviteUrl ?? code
-      if (navigator.clipboard) void navigator.clipboard.writeText(text).catch(() => {})
-      copy.textContent = 'COPIED'
-      window.setTimeout(() => (copy.textContent = 'COPY INVITE'), 1500)
-    })
-    this.duelCodeEl.append(b, copy)
+    if (!code) {
+      this.setRoomLobby(null)
+      return
+    }
+    this.setRoomLobby({ code, isHost: true, inviteUrl })
   }
 
   setJoinCode(code: string): void {

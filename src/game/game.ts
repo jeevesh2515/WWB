@@ -935,6 +935,7 @@ export class Game implements CombatWorld {
       this.duelTakeover()
       return
     }
+    if (m.t === 'start') return
     this.rivalKDriftFrames = 0
     // Rival fragged a bot on their sim: count it here (their bots are local to them).
     if (this.mode !== 'playing') return

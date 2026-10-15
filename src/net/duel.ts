@@ -70,8 +70,9 @@ export type DuelStateMsg = {
 /** One bot frag by the sender. Each side is authoritative for its own kills. */
 export type DuelKillMsg = { t: 'kill'; source: DuelWeapon; headshot: boolean; seq: number }
 export type DuelHelloMsg = { t: 'hello'; name: string; seq: number }
+export type DuelStartMsg = { t: 'start'; seq: number }
 export type DuelByeMsg = { t: 'bye'; seq: number }
-export type DuelMsg = DuelStateMsg | DuelKillMsg | DuelHelloMsg | DuelByeMsg
+export type DuelMsg = DuelStateMsg | DuelKillMsg | DuelHelloMsg | DuelStartMsg | DuelByeMsg
 
 const SOURCES: DuelWeapon[] = ['rifle', 'shotgun', 'rocket', 'grenade', 'barrel', 'fall']
 
@@ -93,6 +94,7 @@ export function isDuelMsg(v: unknown): v is DuelMsg {
       return typeof m.source === 'string' && (SOURCES as string[]).includes(m.source) && typeof m.headshot === 'boolean'
     case 'hello':
       return typeof m.name === 'string' && m.name.length >= 1 && m.name.length <= 16
+    case 'start':
     case 'bye':
       return true
     default:

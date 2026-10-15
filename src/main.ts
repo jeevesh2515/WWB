@@ -74,6 +74,8 @@ async function boot(): Promise<void> {
   let duelBusy = false
   let duelPeerSeen = false
   let duelGen = 0
+  let stagingRoom: { code: string; isHost: boolean; rivalName: string | null; inviteUrl: string } | null = null
+
   const pilotName = () => ((cloud?.user?.email?.split('@')[0] ?? 'PILOT').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) || 'PILOT')
   const closeDuelLink = () => {
     const link = duelLink
@@ -93,6 +95,8 @@ async function boot(): Promise<void> {
   }
   const openDuelRoom = async (code: string, token: number) => {
     closeDuelLink()
+    stagingRoom = null
+    ui.setRoomLobby(null)
     duelPeerSeen = false
     ui.setRoomCode(code, `${location.origin}${location.pathname}${duelInviteQuery(code)}`)
     ui.setDuelStatus(`ROOM ${code} · WAITING FOR RIVAL… CPU FILLS IN`)
@@ -171,9 +175,72 @@ async function boot(): Promise<void> {
   const duelHost = () => {
     const token = duelGuard()
     if (token === null) return
-    void openDuelRoom(makeRoomCode(), token).finally(() => {
+    closeDuelLink()
+    duelPeerSeen = false
+    const code = makeRoomCode()
+    const inviteUrl = `${location.origin}${location.pathname}${duelInviteQuery(code)}`
+    stagingRoom = { code, isHost: true, rivalName: null, inviteUrl }
+    ui.setRoomLobby(stagingRoom)
+    ui.setDuelStatus(null)
+
+    void (async () => {
+      let link: DuelLink | null = null
+      try {
+        link = await DuelLink.open(code, pilotName(), {
+          onMsg: m => {
+            if (token !== duelGen) return
+            if (game?.duel?.remote) {
+              game.duelApply(m)
+              return
+            }
+            if (m.t === 'hello') {
+              duelPeerSeen = true
+              if (stagingRoom && stagingRoom.isHost) {
+                stagingRoom.rivalName = m.name
+                ui.setRoomLobby(stagingRoom)
+                duelLink?.send({ t: 'hello', name: pilotName(), seq: 0 })
+              }
+            }
+          },
+          onPeer: present => {
+            if (token !== duelGen) return
+            if (game?.duel?.remote) {
+              if (present) {
+                duelPeerSeen = true
+                ui.setDuelStatus(null)
+              } else if (duelPeerSeen) {
+                duelPeerSeen = false
+                game.duelTakeover()
+                ui.setDuelStatus('RIVAL DISCONNECTED · CPU TOOK OVER')
+              }
+              return
+            }
+            if (present) {
+              duelPeerSeen = true
+              duelLink?.send({ t: 'hello', name: pilotName(), seq: 0 })
+            } else if (stagingRoom && stagingRoom.isHost && stagingRoom.rivalName) {
+              duelPeerSeen = false
+              stagingRoom.rivalName = null
+              ui.setRoomLobby(stagingRoom)
+            }
+          },
+        })
+      } catch {
+        if (token !== duelGen) return
+        ui.setDuelStatus('NETWORK DOWN · COULD NOT CREATE ROOM')
+        stagingRoom = null
+        ui.setRoomLobby(null)
+        duelBusy = false
+        return
+      }
+      if (token !== duelGen) {
+        if (link) void link.close(0)
+        return
+      }
+      duelLink = link
       duelBusy = false
-    })
+      duelLink.send({ t: 'hello', name: pilotName(), seq: 0 })
+    })()
   }
   const duelJoin = (raw: string) => {
     const token = duelGuard()
@@ -184,14 +251,107 @@ async function boot(): Promise<void> {
       duelBusy = false
       return
     }
-    void openDuelRoom(code, token).finally(() => {
+    closeDuelLink()
+    duelPeerSeen = false
+    const inviteUrl = `${location.origin}${location.pathname}${duelInviteQuery(code)}`
+    stagingRoom = { code, isHost: false, rivalName: null, inviteUrl }
+    ui.setRoomLobby(stagingRoom)
+    ui.setDuelStatus('CONNECTING TO HOST…')
+
+    void (async () => {
+      let link: DuelLink | null = null
+      try {
+        link = await DuelLink.open(code, pilotName(), {
+          onMsg: m => {
+            if (token !== duelGen) return
+            if (game?.duel?.remote) {
+              game.duelApply(m)
+              return
+            }
+            if (m.t === 'hello') {
+              duelPeerSeen = true
+              ui.setDuelStatus(null)
+              if (stagingRoom && !stagingRoom.isHost) {
+                stagingRoom.rivalName = m.name
+                ui.setRoomLobby(stagingRoom)
+              }
+            } else if (m.t === 'start') {
+              const rival = (stagingRoom && stagingRoom.rivalName) || 'HOST'
+              stagingRoom = null
+              ui.setRoomLobby(null)
+              ui.setDuelStatus(null)
+              beginDuel(rival, true)
+            }
+          },
+          onPeer: present => {
+            if (token !== duelGen) return
+            if (game?.duel?.remote) {
+              if (present) {
+                duelPeerSeen = true
+                ui.setDuelStatus(null)
+              } else if (duelPeerSeen) {
+                duelPeerSeen = false
+                game.duelTakeover()
+                ui.setDuelStatus('HOST DISCONNECTED · CPU TOOK OVER')
+              }
+              return
+            }
+            if (present) {
+              duelPeerSeen = true
+              ui.setDuelStatus(null)
+              duelLink?.send({ t: 'hello', name: pilotName(), seq: 0 })
+            } else if (duelPeerSeen) {
+              duelPeerSeen = false
+              ui.setDuelStatus('HOST DISCONNECTED')
+              if (stagingRoom && !stagingRoom.isHost) {
+                stagingRoom.rivalName = null
+                ui.setRoomLobby(stagingRoom)
+              }
+            }
+          },
+        })
+      } catch {
+        if (token !== duelGen) return
+        ui.setDuelStatus('NETWORK DOWN · COULD NOT JOIN ROOM')
+        stagingRoom = null
+        ui.setRoomLobby(null)
+        duelBusy = false
+        return
+      }
+      if (token !== duelGen) {
+        if (link) void link.close(0)
+        return
+      }
+      duelLink = link
       duelBusy = false
-    })
+      ui.setDuelStatus(null)
+      duelLink.send({ t: 'hello', name: pilotName(), seq: 0 })
+    })()
+  }
+  const duelStart = () => {
+    if (!stagingRoom || !stagingRoom.isHost) return
+    if (stagingRoom.rivalName && duelLink) {
+      const rival = stagingRoom.rivalName
+      duelLink.send({ t: 'start', seq: 0 })
+      window.setTimeout(() => duelLink?.send({ t: 'start', seq: 0 }), 100)
+      stagingRoom = null
+      ui.setRoomLobby(null)
+      ui.setDuelStatus(null)
+      beginDuel(rival, true)
+    } else {
+      stagingRoom = null
+      ui.setRoomLobby(null)
+      ui.setDuelStatus(null)
+      closeDuelLink()
+      beginDuel('CPU RIVAL', false)
+    }
   }
   const duelCancel = () => {
     duelGen += 1
     duelBusy = false
+    stagingRoom = null
     closeDuelLink()
+    ui.setRoomLobby(null)
     ui.setDuelStatus(null)
     ui.setRoomCode(null)
   }
@@ -209,6 +369,8 @@ async function boot(): Promise<void> {
     quit: () => {
       closeDuelLink()
       duelGen += 1
+      stagingRoom = null
+      ui.setRoomLobby(null)
       ui.setDuelStatus(null)
       ui.setRoomCode(null)
       game?.toTitle()
@@ -253,6 +415,7 @@ async function boot(): Promise<void> {
     duelQuick,
     duelHost,
     duelJoin,
+    duelStart,
     duelCancel,
   })
   cloud = new CloudServices(status => ui.setCloudStatus(status))

@@ -40,6 +40,7 @@ describe('duel wire validation', () => {
     expect(isDuelMsg(state)).toBe(true)
     expect(isDuelMsg({ t: 'kill', source: 'rifle', headshot: false, seq: 1 })).toBe(true)
     expect(isDuelMsg({ t: 'hello', name: 'ACE', seq: 0 })).toBe(true)
+    expect(isDuelMsg({ t: 'start', seq: 2 })).toBe(true)
     expect(isDuelMsg({ t: 'bye', seq: 9 })).toBe(true)
   })
 
