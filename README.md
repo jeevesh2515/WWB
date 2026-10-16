@@ -1,7 +1,7 @@
 <div align="center">
 
 # ⚡ WORLD WAR B: BUGFRONT ⚡
-### *Hyper-Real, Style-Ranked 3D Browser First-Person Shooter*
+### *Real-time 3D browser FPS built with TypeScript, Three.js, Rapier WASM physics, and Supabase Realtime*
 
 [![Play Live](https://img.shields.io/badge/PLAY_NOW-GitHub_Pages-FF9A2E?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jeevesh2515.github.io/WWB/)
 [![Star Repository](https://img.shields.io/github/stars/jeevesh2515/WWB?style=for-the-badge&label=⭐_Star_Project&color=238636)](https://github.com/jeevesh2515/WWB)
@@ -16,17 +16,34 @@
 
 ### [**🎮 ▶ CLICK HERE TO PLAY LIVE IN YOUR BROWSER (ZERO INSTALL) ◀ 🎮**](https://jeevesh2515.github.io/WWB/)
 
-*Zero downloads. Zero plugins. Instant 60 FPS combat directly in Chrome, Brave, Firefox, Edge, or Safari with full keyboard/mouse and gamepad support.*
+*Zero downloads or plugins: play directly in a modern browser with keyboard/mouse and gamepad support. Performance varies by device and scene.*
 
 <br/>
 
 <a href="https://jeevesh2515.github.io/WWB/">
-  <img src="docs/screenshots/gameplay_demo.gif" alt="World War B: Bugfront 60FPS Browser Gameplay Preview" width="100%" />
+  <img src="docs/screenshots/gameplay_demo.gif" alt="World War B: Bugfront browser gameplay preview" width="100%" />
 </a>
 
-*⚡ Actual in-game combat footage: Three.js WebGL rendering + Rapier WASM physics running live at 60 FPS.*
+*Actual in-game combat footage: Three.js WebGL rendering with Rapier WASM physics. The build is designed for smooth browser play; measure performance on your target device.*
 
 </div>
+
+## Engineering summary
+
+World War B: Bugfront is a zero-install 3D browser game built to explore real-time simulation, WebAssembly physics, client-side performance, and resilient multiplayer state.
+
+I designed and implemented the TypeScript game loop, fixed-step Rapier physics bridge, combat and wave rules, enemy AI, asset streaming, Supabase profile/save integration, duel lobby, score synchronisation, CPU fallback, and automated verification suite.
+
+**Engineering proof:**
+
+- Three.js WebGL rendering with Rapier 3D WASM physics
+- Offline-first gameplay with optional Supabase cloud sync
+- Supabase Realtime lobby and score broadcast for synchronized 1v1 bot races
+- Fixed-step simulation and pure game-rule modules tested with Vitest
+- Playwright multi-window duel verification and headless smoke tests
+- GitHub Actions deployment to GitHub Pages
+
+> **Scope note:** Duel mode synchronizes lobby and score state for a 1v1 bot race; it is not authoritative player-versus-player netcode.
 
 ---
 
@@ -34,8 +51,8 @@
 
 <div align="center">
 
-### 🎮 Tactical Landing Page, Operations & 1v1 Duel Lobby
-*High-production Orbitron typography, cinematic soldier combat backdrop, real-time cloud profile sync, and 1-click 1v1 Duel room staging.*
+### 🎮 Tactical Landing Page, Operations & Synchronized 1v1 Bot-Race Lobby
+*Cinematic browser UI, real-time cloud profile sync, and one-click synchronized 1v1 bot-race lobby staging.*
 <img src="docs/screenshots/01_landing_page.png" alt="World War B Tactical Landing Page and Duel Lobby" width="95%" />
 
 <br/><br/>
@@ -65,6 +82,27 @@
 </div>
 
 ---
+
+## Technical challenges solved
+
+1. **Stable simulation:** kept physics and combat rules deterministic with a fixed-step update path.
+2. **Fast first interaction:** streamed non-essential assets while keeping the initial playable scene lightweight.
+3. **Resilient multiplayer state:** synchronized room membership and score events while repairing missed packets and falling back to a CPU rival on disconnect.
+4. **Secure browser integration:** exposed only browser-safe Supabase anonymous credentials and enforced row-level security for user-owned records.
+5. **Testable game logic:** isolated wave, style-meter, save-store, and duel-wire rules from rendering code so they can run in automated tests.
+
+## Project status
+
+- **Status:** Public portfolio release / active iteration
+- **Live build:** [GitHub Pages](https://jeevesh2515.github.io/WWB/)
+- **Primary branch:** `main`
+- **Known limitation:** Duel mode synchronizes lobby and score state; it is not authoritative player-versus-player netcode.
+
+## Key architecture decisions
+
+- **Why Rapier WASM:** deterministic, performant 3D collision and character-controller primitives in the browser.
+- **Why pure rule modules:** combat, waves, scoring, and duel-wire logic can be tested without a WebGL canvas.
+- **Why offline-first:** the core game remains playable without authentication or a network; cloud features enhance progression rather than gate the primary experience.
 
 ## 🎯 About The Game
 
