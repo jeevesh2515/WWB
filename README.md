@@ -24,13 +24,13 @@
   <img src="docs/screenshots/gameplay_demo.gif" alt="World War B: Bugfront browser gameplay preview" width="100%" />
 </a>
 
-### 35-second trailer
-
-<a href="docs/media/wwb_trailer.mp4?raw=true">
-  <img src="docs/media/wwb_trailer_poster.jpg" alt="World War B: Bugfront trailer: click to watch" width="80%" />
+<a href="https://jeevesh2515.github.io/WWB/">
+  <img src="docs/media/wwb_trailer_poster.jpg" alt="World War B: Bugfront gameplay trailer poster" width="80%" />
 </a>
 
-▶ **[Watch the trailer (MP4, 3.8 MB)](docs/media/wwb_trailer.mp4?raw=true)**
+<br/>
+
+▶ **[Play Live in Browser](https://jeevesh2515.github.io/WWB/)** &nbsp;•&nbsp; **[Download 35s Trailer (MP4, 3.8 MB)](https://github.com/jeevesh2515/WWB/raw/main/docs/media/wwb_trailer.mp4)**
 
 *In-game footage: Three.js WebGL rendering with Rapier WASM physics.*
 
