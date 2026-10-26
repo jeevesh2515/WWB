@@ -26,11 +26,11 @@
 
 ### 35-second trailer
 
-<a href="docs/media/wwb_trailer.mp4">
+<a href="docs/media/wwb_trailer.mp4?raw=true">
   <img src="docs/media/wwb_trailer_poster.jpg" alt="World War B: Bugfront trailer: click to watch" width="80%" />
 </a>
 
-▶ **[Watch the trailer (MP4, 8 MB)](docs/media/wwb_trailer.mp4)**
+▶ **[Watch the trailer (MP4, 3.8 MB)](docs/media/wwb_trailer.mp4?raw=true)**
 
 *In-game footage: Three.js WebGL rendering with Rapier WASM physics.*
 
