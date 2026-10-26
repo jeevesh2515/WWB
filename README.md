@@ -1,7 +1,7 @@
 <div align="center">
 
-# ⚡ WORLD WAR B: BUGFRONT ⚡
-### *Real-time 3D browser FPS built with TypeScript, Three.js, Rapier WASM physics, and Supabase Realtime*
+# World War B: Bugfront
+### *A 3D browser FPS built with TypeScript, Three.js, Rapier WASM physics, and Supabase Realtime*
 
 [![Play Live](https://img.shields.io/badge/PLAY_NOW-GitHub_Pages-FF9A2E?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jeevesh2515.github.io/WWB/)
 [![Star Repository](https://img.shields.io/github/stars/jeevesh2515/WWB?style=for-the-badge&label=⭐_Star_Project&color=238636)](https://github.com/jeevesh2515/WWB)
@@ -14,9 +14,9 @@
 
 <br/>
 
-### [**🎮 ▶ CLICK HERE TO PLAY LIVE IN YOUR BROWSER (ZERO INSTALL) ◀ 🎮**](https://jeevesh2515.github.io/WWB/)
+### [**▶ Play in your browser (no install)**](https://jeevesh2515.github.io/WWB/)
 
-*Zero downloads or plugins: play directly in a modern browser with keyboard/mouse and gamepad support. Performance varies by device and scene.*
+*Runs in a modern desktop browser with keyboard/mouse or a standard gamepad. Performance varies by device and scene.*
 
 <br/>
 
@@ -24,121 +24,128 @@
   <img src="docs/screenshots/gameplay_demo.gif" alt="World War B: Bugfront browser gameplay preview" width="100%" />
 </a>
 
-*Actual in-game combat footage: Three.js WebGL rendering with Rapier WASM physics. The build is designed for smooth browser play; measure performance on your target device.*
+### 35-second trailer
+
+<a href="docs/media/wwb_trailer.mp4">
+  <img src="docs/media/wwb_trailer_poster.jpg" alt="World War B: Bugfront trailer: click to watch" width="80%" />
+</a>
+
+▶ **[Watch the trailer (MP4, 8 MB)](docs/media/wwb_trailer.mp4)**
+
+*In-game footage: Three.js WebGL rendering with Rapier WASM physics.*
 
 </div>
 
 ## Engineering summary
 
-World War B: Bugfront is a zero-install 3D browser game built to explore real-time simulation, WebAssembly physics, client-side performance, and resilient multiplayer state.
+World War B: Bugfront is a no-install 3D browser game I built to explore real-time simulation, WebAssembly physics, client-side performance, and resilient multiplayer state.
 
-I designed and implemented the TypeScript game loop, fixed-step Rapier physics bridge, combat and wave rules, enemy AI, asset streaming, Supabase profile/save integration, duel lobby, score synchronisation, CPU fallback, and automated verification suite.
+I designed and implemented the TypeScript game loop, the fixed-step Rapier physics bridge, combat and wave rules, enemy AI, staged asset streaming, Supabase profile/save integration, the duel lobby, score synchronisation, CPU fallback, and the automated verification scripts.
 
-**Engineering proof:**
+**What's in the codebase:**
 
 - Three.js WebGL rendering with Rapier 3D WASM physics
 - Offline-first gameplay with optional Supabase cloud sync
-- Supabase Realtime lobby and score broadcast for synchronized 1v1 bot races
-- Fixed-step simulation and pure game-rule modules tested with Vitest
-- Playwright multi-window duel verification and headless smoke tests
-- GitHub Actions deployment to GitHub Pages
+- Supabase Realtime lobby and score broadcast for 1v1 bot races
+- 60 Hz fixed-step simulation; game-rule modules free of rendering code, tested with Vitest
+- Playwright multi-window duel verification and a headless smoke test
+- GitHub Actions build (typecheck, Vite bundle, size budget) and deploy to GitHub Pages
 
 > **Scope note:** Duel mode synchronizes lobby and score state for a 1v1 bot race; it is not authoritative player-versus-player netcode.
 
 ---
 
-## 📸 Gameplay & Visual Showcase
+## Screenshots
 
 <div align="center">
 
-### 🎮 Tactical Landing Page, Operations & Synchronized 1v1 Bot-Race Lobby
-*Cinematic browser UI, real-time cloud profile sync, and one-click synchronized 1v1 bot-race lobby staging.*
+### Landing page and 1v1 bot-race lobby
+*Main menu, pilot profile panel, and the duel staging lobby with room code and copy buttons.*
 <img src="docs/screenshots/01_landing_page.png" alt="World War B Tactical Landing Page and Duel Lobby" width="95%" />
 
 <br/><br/>
 
-### 🌧️ Wave 1 Infiltration — Kestrel Terminal Port Deck
-*Three.js PBR container yard, wet concrete rain ripples, RTG cranes, and procedural M4 Carbine viewmodel.*
+### Wave 1 — Kestrel Terminal port deck
+*Container yard with PBR materials, wet concrete, rain, and scanned RTG cranes.*
 <img src="docs/screenshots/02_wave_start.png" alt="Wave 1 Wolf Pack Patrol Infiltration" width="95%" />
 
 <br/><br/>
 
-### 🔥 High-Stakes Close-Quarters Combat & Low-Health Alarm
-*Emergency Armor Broken warning, red battle vignette, and high-intensity firefights against Sentinel combat droids.*
+### Close-quarters combat at low health
+*Armor-broken warning and low-health vignette while fighting Sentinel droids.*
 <img src="docs/screenshots/03_intense_combat.png" alt="Close Quarters Combat with Armor Broken" width="95%" />
 
 <br/><br/>
 
-### ⚡ Wave Cleared & Health Shard Harvesting
-*Aggression rewards survival: slain bots drop glowing recovery shards, M870 pump shotgun, and style multipliers.*
+### Wave cleared and shard pickups
+*Defeated bots drop health, armor, and ammo shards.*
 <img src="docs/screenshots/04_wave_cleared.png" alt="Wave Cleared and Shard Resupply" width="95%" />
 
 <br/><br/>
 
-### 🛡️ Tactical Augment Perks Selection
-*Stackable perks between waves powered by our custom high-visibility glowing vector SVG icon system.*
+### Augment selection between waves
+*Stackable perk cards rendered with an inline SVG icon set.*
 <img src="docs/screenshots/05_choose_augment.png" alt="Choose An Augment Perk Selection" width="95%" />
 
 </div>
 
 ---
 
-## Technical challenges solved
+## Technical challenges
 
-1. **Stable simulation:** kept physics and combat rules deterministic with a fixed-step update path.
-2. **Fast first interaction:** streamed non-essential assets while keeping the initial playable scene lightweight.
-3. **Resilient multiplayer state:** synchronized room membership and score events while repairing missed packets and falling back to a CPU rival on disconnect.
-4. **Secure browser integration:** exposed only browser-safe Supabase anonymous credentials and enforced row-level security for user-owned records.
-5. **Testable game logic:** isolated wave, style-meter, save-store, and duel-wire rules from rendering code so they can run in automated tests.
+1. **Stable simulation:** gameplay and physics advance in fixed 1/60 s steps through an accumulator loop (`src/engine/loop.ts`); rendering interpolates between the last two states, and frame time is clamped to avoid a catch-up spiral after a stall.
+2. **Fast first interaction:** assets load in stages (`src/game/stages.ts`); the title and first wave wait only for stage 1, and later stages stream in the background.
+3. **Resilient duel state:** room membership uses Realtime presence; each client owns its own kill count and periodically broadcasts its total so the rival's counter resyncs if kill events are lost. A CPU rival takes over when the peer disconnects or the network is unavailable.
+4. **Browser-safe backend access:** the client ships only the public Supabase URL and anon key; row-level security restricts each table to the signed-in user's rows.
+5. **Testable game logic:** match rules, the wave director/style meter, the save store, and the duel wire protocol live in modules that do not import Three.js, so they run under Vitest without a WebGL canvas.
 
 ## Project status
 
-- **Status:** Public portfolio release / active iteration
+- **Status:** Public portfolio release, active iteration
 - **Live build:** [GitHub Pages](https://jeevesh2515.github.io/WWB/)
 - **Primary branch:** `main`
 - **Known limitation:** Duel mode synchronizes lobby and score state; it is not authoritative player-versus-player netcode.
 
 ## Key architecture decisions
 
-- **Why Rapier WASM:** deterministic, performant 3D collision and character-controller primitives in the browser.
+- **Why Rapier WASM:** fast 3D collision and rigid-body simulation in the browser, stepped at the loop's fixed rate.
 - **Why pure rule modules:** combat, waves, scoring, and duel-wire logic can be tested without a WebGL canvas.
-- **Why offline-first:** the core game remains playable without authentication or a network; cloud features enhance progression rather than gate the primary experience.
+- **Why offline-first:** the game is fully playable without an account or network; cloud features add progression sync rather than gate play.
 
-## 🎯 About The Game
+## About the game
 
-**World War B: Bugfront** is a push-forward first-person shooter running on pure web technologies (**Three.js WebGL + Rapier3D WebAssembly physics**). 
+**World War B: Bugfront** is a first-person shooter built on web technologies (**Three.js WebGL + Rapier3D WebAssembly**).
 
-As **Kai**, a frontline spec-ops operator, hold a storm-lit industrial container port (**Kestrel Terminal**) against **8 brutal waves** of masked mercenaries, humanoid combat droids, hunter hounds, and mechanized exoskeletons, culminating in a colossal boss fight against **The Warden**.
+You play **Kai**, holding a storm-lit container port (**Kestrel Terminal**) through **8 waves** of mercenaries, combat droids, hounds, and exoskeletons, ending in a boss fight against **The Warden**.
 
-### 🌟 Core Gameplay Pillars
+### Core mechanics
 
-- **Aggression Keeps You Alive**: Slain war bots drop Frontline Shards that instantly replenish health, recharging armor, and ammo. Camping is fatal; forward momentum is survival.
-- **Dynamic Style Ranking**: Chain kills, headshots, slide kills, weapon swaps, and explosive multikills to climb the Devil May Cry / ULTRAKILL-inspired style ranks:  
-  `D (Dull) → C (Chaotic) → B (Brutal) → A (Anarchic) → S (Savage) → SS (Supreme) → FRONTBREAKER`. Rank acts as a direct score multiplier.
-- **Tactical Augment Perks**: Between waves, select one of eight stackable enhancements:
-  - 🩸 **Vampire Core**: Kills siphon biological repair fluids, healing on every takedown.
-  - 🎯 **Choke**: -30% shotgun spread, +15% concentrated kinetic damage.
-  - 🛡️ **Plated**: +50 maximum armor pool with instant overshield refill.
-  - ⚡ **Overclock**: +25% weapon cycle rate and reduced recoil recovery.
-  - 💣 **Demolitions**: +40% explosion radius and bonus grenade capacity.
-  - 📦 **Scavenger**: Double ammunition drop yield from fallen bots.
-  - 💀 **Hollow Points**: +35% critical headshot damage multiplier.
-  - ⚡ **Quick Hands**: +40% reload speed and near-instant weapon draw.
-- **Overdrive State**: Fill your kinetic energy meter to activate Overdrive—unleashing maximum fire rate, infinite ammo reserve, and high-contrast night-vision grading.
-- **Multiple Game Modes**:
-  - 🏆 **Bugfront (Onslaught)**: 8 escalating waves ending in the Warden boss encounter.
-  - 💀 **Deathmatch**: High-speed 6-bot arena combat (first to 20 frags).
-  - ⚔️ **Duel (1v1 Bot Race)**: You + one rival hunting the same bot pack for 3 minutes — no PvP, most bot kills wins.
-    - **Staging Room & 1-Click Sharing**: Clicking `HOST · GET CODE` generates a clean 6-character room code in a dedicated staging lobby. Click either the room badge or `COPY CODE` / `COPY INVITE LINK` to copy to clipboard in one click.
-    - **Instant Peer Discovery**: When your friend enters your code and clicks `JOIN`, the host's screen instantly reflects `🟢 RIVAL JOINED` in real-time and activates the glowing `START MATCH` button.
-    - **Synchronized Launch**: The host controls match launch. Clicking start simultaneously transitions both players into a synchronized 3-second combat countdown (`3... 2... 1... FIGHT!`).
-    - **Live Score Synchronization**: Each client is authoritative for its own frags and broadcasts kill events over Supabase Realtime broadcast; state packets continuously repair any packet loss.
-    - **Seamless CPU Fallback**: Start solo vs CPU at any time (`START NOW (VS CPU)`), or if a peer disconnects mid-match, an AI pilot takes over the puppet immediately so combat never halts.
-- **Title Backdrop Is a Simulation**: The landing-page arena behind the menu is bots fighting bots (scores drift both ways). Your real match starts only after you pick a mode.
+- **Shard pickups:** defeated bots drop health, armor, and ammo shards, which rewards pushing forward over camping.
+- **Style ranks:** kills, headshots, slide kills, airborne kills, multi-kills, and explosive kills fill a style meter with ranks `D → C → B → A → S → SS → FRONTBREAKER`. Rank multiplies score (1× up to 4×); taking a hit drops a rank.
+- **Augment perks:** between waves, pick one of eight stackable perks:
+  - **Hollow Points:** +20% rifle damage
+  - **Quick Hands:** +30% reload speed
+  - **Plated:** +50 max armor, armor refilled
+  - **Scavenger:** +50% shard magnet radius, +25% shard value
+  - **Overclock:** +35% Overdrive charge rate
+  - **Demolitions:** +1 grenade, +25% blast radius
+  - **Vampire Core:** every kill restores 5 health
+  - **Choke:** -30% shotgun spread, +15% damage
+- **Overdrive:** a full style meter enables a 7-second Overdrive with 1.5× damage, 1.3× fire rate, and infinite ammo.
+- **Game modes:**
+  - **Bugfront (Onslaught):** 8 escalating waves ending in the Warden boss encounter.
+  - **Deathmatch:** bot arena; first to 20 frags wins.
+  - **Duel (1v1 bot race):** you and one rival hunt the same bot pack for 3 minutes; no PvP, most bot kills wins.
+    - **Staging lobby:** `HOST · GET CODE` creates a 6-character room code; `COPY CODE` / `COPY INVITE LINK` copy it to the clipboard.
+    - **Peer discovery:** when a friend joins with the code, the host's lobby shows `RIVAL JOINED` and enables `START MATCH`.
+    - **Host-controlled start:** the host starts the match and both clients enter a shared 3-second countdown.
+    - **Score sync:** each client is authoritative for its own kills and broadcasts kill events over Supabase Realtime; periodic state packets carry kill totals to repair lost events.
+    - **CPU fallback:** start solo with `START NOW (VS CPU)`, or let a CPU rival take over if the peer disconnects mid-match.
+- **Title backdrop:** the arena behind the menu runs bots against bots; your match starts after you pick a mode.
 
 ---
 
-## 🕹️ Controls Guide
+## Controls
 
 | Action | Keyboard & Mouse | Gamepad (Standard) |
 | :--- | :--- | :--- |
@@ -159,64 +166,64 @@ As **Kai**, a frontline spec-ops operator, hold a storm-lit industrial container
 
 ---
 
-## 🏗️ Technical Architecture
+## Technical architecture
 
 ```
 WWB/
 ├── src/
-│   ├── main.ts              # Game bootstrap, state manager, audio mixer, busy-aware loop
-│   ├── engine/              # Rapier 3D WASM physics bridge, fixed-step tick, input system
+│   ├── main.ts              # Bootstrap, mode/state management, duel session wiring
+│   ├── engine/              # Fixed-step loop, Rapier physics bridge, renderer, audio, input, save store
 │   ├── game/
-│   │   ├── game.ts          # Match orchestrator, damage arcs, combat resolution
-│   │   ├── rules.ts         # Pure match rules, frag/death tracking, medals, score calculation
-│   │   ├── onslaught.ts     # Pure wave director, style meter calculation, perk logic
-│   │   ├── weapons.ts       # Weapon mechanics, recoil curves, hitscan & projectile ballistics
-│   │   ├── bots.ts          # Enemy AI navigation, combat routines, IK aiming, puppet driver
-│   │   ├── stages.ts        # Staged asset loader with background streaming queue
-│   │   └── arena.ts         # Procedural ISO 6346 shipping containers & Kestrel port deck
+│   │   ├── game.ts          # Match orchestrator, damage, combat resolution
+│   │   ├── rules.ts         # Pure match rules, frag/death tracking, medals, scoring
+│   │   ├── onslaught.ts     # Pure wave plans, style meter, perk effects
+│   │   ├── weapons.ts       # Weapon mechanics, recoil, hitscan and projectiles
+│   │   ├── bots.ts          # Enemy AI navigation, combat routines, rival puppet driver
+│   │   ├── stages.ts        # Staged asset loader with background streaming
+│   │   └── arena.ts         # Procedural shipping containers and Kestrel port deck
 │   ├── net/
-│   │   ├── duel.ts          # Pure 1v1 netcode, room code generator, wire validation, rival interpolation
+│   │   ├── duel.ts          # Pure duel protocol: room codes, wire validation, rival interpolation
 │   │   └── lobby.ts         # Lazy-loaded Supabase Realtime broadcast & presence transport
 │   ├── ui/
-│   │   ├── ui.ts            # HUD render layer, modal dialogs, title screen
-│   │   ├── icons.ts         # High-definition inline SVG vector icon system (zero network overhead)
-│   │   └── sparks.ts        # GPU canvas particle system for sparks & UI feedback
+│   │   ├── ui.ts            # HUD, modal dialogs, title screen
+│   │   ├── icons.ts         # Inline SVG icon set
+│   │   └── sparks.ts        # Pooled 2D-canvas particle layer for HUD feedback
 │   └── backend/
-│       ├── cloud.ts         # Cloud profile, saves & AI debrief integration
-│       └── supabase.ts      # REST-first browser-safe Supabase client (zero heavy SDK)
+│       ├── cloud.ts         # Cloud profile, saves, and after-action debrief calls
+│       └── supabase.ts      # Small REST client for Supabase auth and data (no full SDK)
 ├── supabase/
 │   ├── migrations/          # SQL schema (profiles, match_records, player_progress)
-│   └── functions/           # Edge Functions (AI after-action debrief)
+│   └── functions/           # Edge Function for an optional AI-written after-action debrief
 └── public/
-    └── assets/              # Web-optimized 3D models (GLTF/GLB), HDRI, audio (SFX/Music), WebP
+    └── assets/              # 3D models (GLB), HDRI, textures, audio, WebP
 ```
 
-- **Render Engine**: Three.js WebGL renderer with image-based lighting (Poly Haven CC0 HDRI), PBR metal/roughness materials, screen-space grime, and dynamic bloom.
-- **Physics**: Rapier3D compiled to WebAssembly for deterministic collision meshes, character controllers, and dynamic debris.
-- **Audio Engine**: Staged Web Audio API mixer with spatial 3D audio, dynamic combat ducking, low-pass filters on low health, and adaptive music switching.
-- **Adaptive Staged Streaming**: Loads core combat assets in `< 22 MB`, rendering the title screen in milliseconds while later waves and high-poly boss assets stream dynamically during calm gameplay windows.
+- **Rendering:** Three.js WebGL with image-based lighting (Poly Haven CC0 HDRI), PBR materials, and bloom on medium/high quality presets.
+- **Physics:** Rapier3D compiled to WebAssembly for colliders and dynamic bodies such as crates.
+- **Audio:** Web Audio API mixer with a shell-shock low-pass filter that muffles SFX and a music filter that softens between waves.
+- **Staged streaming and size budget:** stage 1 (title + first wave) loads first; later waves and the boss stream in the background. `scripts/check-size.mjs` fails the build if the gzipped JS exceeds 2.0 MB, the boot payload (everything except streamed music) exceeds 23 MB, or the full build exceeds 29.5 MB.
 
 ---
 
-## ☁️ Cloud Profile, Cross-Device Saves & Supabase
+## Cloud profile and Supabase
 
-World War B runs 100% offline out-of-the-box, but also features seamless **Supabase Cloud Sync** for cross-device progression, leaderboards, and AI match debriefs:
+The game runs fully offline by default. With Supabase configured, it adds cross-device progression:
 
-1. **Authentication**: Sign in directly from the **Pilot Profile** HUD panel with Email & Password.
-2. **Cloud Persistence**: Your best wave, high scores, style ranks, and combat statistics automatically sync across devices.
-3. **Database Schema**: Pre-built migration provided in [`supabase/migrations/001_worldwarb.sql`](supabase/migrations/001_worldwarb.sql).
-4. **Security by Design**: The client uses only browser-safe public `anon` credentials (`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`). `service_role` secrets and database passwords are never bundled or exposed.
-5. **1v1 Duels Need Realtime**: Random/code-match duels ride on Supabase Realtime broadcast + presence (no tables, no migration). Enable Realtime in your Supabase project; without it (or offline) duels fall back to a CPU rival automatically.
+1. **Authentication:** sign in from the **Pilot Profile** panel with email and password.
+2. **Cloud persistence:** your save data (`player_progress`) and per-match records (`match_records`: mode, score, duration, summary) sync to your account.
+3. **Database schema:** migration in [`supabase/migrations/001_worldwarb.sql`](supabase/migrations/001_worldwarb.sql).
+4. **Credentials:** the client uses only the public `anon` key (`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`). `service_role` secrets and database passwords are never bundled.
+5. **Duels need Realtime:** duels use Supabase Realtime broadcast + presence (no tables, no migration). Enable Realtime in your Supabase project; without it, or offline, duels fall back to a CPU rival.
 
 ---
 
-## 💻 Local Development & Testing
+## Local development
 
 ### Prerequisites
 - Node.js 20+
 - pnpm (recommended) or npm
 
-### Setup & Run
+### Setup & run
 ```bash
 # Clone the repository
 git clone https://github.com/jeevesh2515/WWB.git
@@ -228,39 +235,52 @@ pnpm install
 # Start local dev server
 pnpm dev
 ```
-Open [http://localhost:5173/](http://localhost:5173/) to play and test locally.
+Open [http://localhost:5173/](http://localhost:5173/) to play locally.
 
-### Production Build & Size Budget Verification
+### Build and test commands
 ```bash
-# Typecheck + Vite production bundle + wire size budget check
+# Typecheck + Vite production bundle + size budget check
 pnpm build
 
-# Run Vitest test suite (pure game rules, style meter, onslaught, save store, duel wire protocol)
+# Vitest suite (match rules, onslaught/style meter, save store, duel wire protocol, preview)
 pnpm test
 
-# Run multi-window Playwright verification (host lobby + joiner + synchronized start + live score sync)
+# Multi-window Playwright check (host lobby + joiner + synchronized start + score sync)
 pnpm run test:duel
 
-# Run headless smoke test with automated screenshots
+# Headless smoke test with screenshots
 pnpm smoke
 ```
 
+## Testing & CI
+
+| Check | Command | Runs locally | Runs in CI |
+| :--- | :--- | :---: | :---: |
+| Typecheck | `tsc --noEmit` (via build) | Yes | Yes |
+| Production bundle | `vite build` (via build) | Yes | Yes |
+| Size budget | `scripts/check-size.mjs` (via build) | Yes | Yes |
+| Unit tests (5 files, 42 tests) | `pnpm test` | Yes | No |
+| Duel lobby, two browser windows | `pnpm run test:duel` | Yes | No |
+| Headless smoke | `pnpm smoke` | Yes | No |
+
+CI (`.github/workflows/deploy-pages.yml`) runs `pnpm run manus:build-source` (typecheck, Vite build, size check) on every push to `main` and deploys the result to GitHub Pages. Vitest and Playwright are run locally before pushing; they are not part of the CI workflow.
+
 ---
 
-## 🛡️ Security & Privacy
+## Security & privacy
 
-- **No Secret Leaks**: `.env` and `.env.local` are explicitly ignored in `.gitignore`.
-- **Row-Level Security (RLS)**: Database tables enforce strict user isolation; pilots can only read and write their own records.
-- **Offline First**: If Supabase credentials are not present, the game gracefully switches to offline mode with `localStorage` fallback—no crashes or blocked gameplay.
+- **No committed secrets:** `.env`, `.env.local`, and `.env.*.local` are listed in `.gitignore`.
+- **Row-level security:** each table has RLS enabled with policies limiting reads and writes to the signed-in user's own rows.
+- **Offline fallback:** without Supabase credentials the game runs in offline mode with `localStorage` saves.
 
 ---
 
-## 📜 Credits & Attributions
+## Credits & attributions
 
 - **Environment & PBR Textures**: [Poly Haven](https://polyhaven.com/) (CC0) — *The Sky Is On Fire* HDRI, industrial wet concrete, and rusty metal materials.
 - **Terminal Props**: RTG cranes and container equipment modeled from Tripo scans.
 - **Rigging & Animations**: Mixamo X Bot via Three.js.
-- **Icons & Graphics**: Vector SVG icon library custom crafted for World War B.
+- **Icons & Graphics**: Vector SVG icon set made for World War B.
 - **Physics**: [Rapier.rs](https://rapier.rs/) (Apache-2.0).
 - **Core 3D Engine**: [Three.js](https://threejs.org/) (MIT).
 
@@ -268,18 +288,12 @@ pnpm smoke
 
 <div align="center">
 
-### 🎮 Ready to drop into Kestrel Terminal?
-
-[![Play Live in Browser](https://img.shields.io/badge/▶_PLAY_FREE_NOW-Instant_Browser_Play-FF9A2E?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jeevesh2515.github.io/WWB/)
+[![Play Live in Browser](https://img.shields.io/badge/▶_PLAY_NOW-Browser-FF9A2E?style=for-the-badge&logo=googlechrome&logoColor=white)](https://jeevesh2515.github.io/WWB/)
 &nbsp;&nbsp;
 [![Star on GitHub](https://img.shields.io/github/stars/jeevesh2515/WWB?style=for-the-badge&label=⭐_Star_Repository&color=238636)](https://github.com/jeevesh2515/WWB)
 
 <br/>
 
-*If you enjoyed the game or find the Three.js + Rapier WASM codebase useful, please drop a ⭐ star on the repository—it helps indie open-web gaming reach more players!*
-
-<br/>
-
-<sub>World War B: Bugfront · MIT Licensed · Built with passion for open-web gaming.</sub>
+<sub>World War B: Bugfront · MIT Licensed</sub>
 
 </div>
